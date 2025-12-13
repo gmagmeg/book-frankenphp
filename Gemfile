@@ -6,3 +6,5 @@ gem 'pandoc2review'
 gem 'playwright-runner'
 gem 'rake'
 # gem 'review-peg', '0.2.2'
+gem "nkf"
+gem "csv"
