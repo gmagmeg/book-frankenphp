@@ -126,7 +126,7 @@ module.exports = grunt => {
 	});
 
 	function generateTask(target) {
-		return ["clean", "shell:preprocess", `shell:compile2${target}`];
+		return ["clean", `shell:compile2${target}`];
 	}
 
 	grunt.registerTask(

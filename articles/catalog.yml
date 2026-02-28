@@ -3,6 +3,8 @@ PREDEF:
 
 CHAPS:
   - article.re
+  - _autogen_md_chapters.re
+  - markdown.re
 
 APPENDIX:
 

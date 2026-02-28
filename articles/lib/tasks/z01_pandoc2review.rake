@@ -23,10 +23,13 @@ require 'yaml'
 require 'date'
 
 def make_mdre(ch, p2r, path)
-  if File.exist?(ch) # re file
+  md_file = File.join('md', ch.sub(/\.re\Z/, '.md'))
+  if ch == '_autogen_md_chapters.re'
+    system("cat #{ch} | #{p2r} > #{path}/#{ch}")
+  elsif File.exist?(ch) # re file
     FileUtils.cp(ch, path)
-  elsif File.exist?(ch.sub(/\.re\Z/, '.md')) # md file
-    system("#{p2r} #{ch.sub(/\.re\Z/, '.md')} > #{path}/#{ch}")
+  elsif File.exist?(md_file) # md file in md/ dir
+    system("#{p2r} #{md_file} > #{path}/#{ch}")
   end
 end
 
@@ -81,9 +84,8 @@ task :pandoc2review do
 end
 
 CLEAN.include('_refiles')
-Rake::Task[BOOK_PDF].enhance([:pandoc2review])
-Rake::Task[BOOK_EPUB].enhance([:pandoc2review])
-Rake::Task[WEBROOT].enhance([:pandoc2review])
-Rake::Task[TEXTROOT].enhance([:pandoc2review])
-Rake::Task[TOPROOT].enhance([:pandoc2review])
-Rake::Task[IDGXMLROOT].enhance([:pandoc2review])
+%i[pdf epub web text plaintext idgxml].each do |task_name|
+  if Rake::Task.task_defined?(task_name)
+    Rake::Task[task_name].prerequisites.unshift(:pandoc2review)
+  end
+end
