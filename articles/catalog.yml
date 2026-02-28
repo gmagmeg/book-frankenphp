@@ -2,9 +2,14 @@ PREDEF:
   - preface.re
 
 CHAPS:
-  - article.re
-  - _autogen_md_chapters.re
-  - markdown.re
+  - 01-what-is-frankenphp.re
+  - 02-setup.re
+  - 03-first-app.re
+  - 04-basic-config.re
+  - 05-request-model.re
+  - 06-compare-apache-fpm.re
+  - 07-laravel.re
+  - 08-summary.re
 
 APPENDIX:
 
