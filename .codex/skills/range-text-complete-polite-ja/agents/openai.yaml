@@ -1,4 +1,4 @@
 interface:
-  display_name: "範囲文章補完（ですます）"
+  display_name: "sentence-format"
   short_description: "指定範囲を補完し、ですます調に整えてgit addまで実施する"
   default_prompt: "Use $range-text-complete-polite-ja to complete the specified text range, normalize it to polite Japanese style (です・ます調), and stage the edited files with git add."

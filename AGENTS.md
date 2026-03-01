@@ -54,3 +54,9 @@
 - 依頼がない限り、ライセンス表記や大規模なツールチェイン更新（Re:VIEWメジャーバージョン変更等）は行わない
 - 無関係ファイルの整形・リネーム・削除は行わない
 
+## Skills
+このリポジトリで利用可能なローカル Skills 一覧です。
+
+### Available skills
+- range-text-review-ja: Review and edit only the user-specified text range in prose. Use when asked to proofread a chapter/section/line range, fix typos and notation inconsistencies, and keep the original intent. If statements may be factually wrong or misleading, do not rewrite those claims; list them as findings. (file: `.codex/skills/range-text-review-ja/SKILL.md`)
+- range-text-complete-polite-ja: Complete and refine only the user-specified text range in Japanese prose. Use when asked to fill missing explanations, bridge unfinished sentences, or improve flow within a bounded section, while normalizing output to polite Japanese style (です・ます調). After editing, stage the changed files with `git add`. (file: `.codex/skills/range-text-complete-polite-ja/SKILL.md`)
