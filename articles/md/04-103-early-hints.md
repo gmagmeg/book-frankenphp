@@ -5,7 +5,7 @@
 ## 4.1 103 Early Hintsとは
 
 HTTP 103 Early Hints は、サーバーが最終レスポンスを返す前に、ブラウザへ予備のHTTPヘッダーを送信できる仕組みです。ブラウザはこの情報をもとに、CSSやJavaScriptなどのリソースを事前に読み込み始めます。その結果、ページの表示速度が向上します。
-何か良さげな機能ですが、どうやった利用できるのでしょうか。Franken phpでこの機能を利用するために、準備を進めていきます。
+何か良さげな機能ですが、どうやったら利用できるのでしょうか。Franken phpでこの機能を利用するために、準備を進めていきます。
 
 ## 4.2 HTTP/2、SSLの設定
 
@@ -25,7 +25,7 @@ php artisan octane:frankenphp --https --watch
 volumes:
   - caddy_data:/data  # TLS証明書を永続化し、コンテナ再起動後も再登録が不要になる
 ```
-2. 設定を反映するためにイメージの再作成とコンテナの再起動を行えば、完了です。
+2. 設定を反映するためにイメージの再作成とコンテナの再起動を行います。
 ```bash
 docker compose build --no-cache
 docker compose up -d
@@ -52,21 +52,17 @@ https://localhost:8100
     headers_send(103);
 ```
 
-コードを差し込んだ後は、103 Early Hints が実際に送信されているか確認しましょう。次のコマンドを実行します。
-出力に `HTTP/2 103` が含まれていれば、Early Hints が正常に送信されていれば成功です。
+コードを差し込んだ後は、103 Early Hints が実際に送信されているか確認しましょう。開発者ツールのネットワークタブにEarly Hints Headerが増えているのが確認できるはずです。
 
-```bash
-curl -v --http2 https://localhost:8100/mercure/sse-demo 2>&1 | head -50 | tail -5
-```
+Early Hints Headerあり
+![early-hints-headers](../images/early-hints-headers.png)
 
-```
-> 
-* Request completely sent off
-< HTTP/2 103 
-< alt-svc: h3=":8100"; ma=2592000
-< link: </.well-known/mercure>; rel=preconnect
-```
+Early Hints Headerなし
+![early-hints-no](../images/early-hints-no.png)
+
 
 ## 4.4 この章のまとめ
-如何だったでしょうか。
-NginxやApacheなどの他のWebサーバーアプリケーションだったらどれくらいの手順が必要なのか、ざっくり
+
+いかがだったでしょうか。NginxやApacheなどの他のWebサーバーアプリケーションだったらどれくらいの手順が必要なのか、ざっくり想像するだけでも大変な作業です。しかしFrankenPHPでは、起動コマンドに `--https` フラグを1つ追加するだけでHTTPS化とHTTP/2が有効になります。アプリケーション側のコードもわずか数行で済み、手軽にHTTP 103 Early Hintsを導入できます。
+
+この章では、FrankenPHPを使ってHTTP 103 Early Hintsを動作させるまでの手順を確認しました。SSL証明書の設定、HTTP/2の有効化、アプリケーションコードの組み込みから動作確認まで、シンプルな構成で実現できることがお分かりいただけたと思います。
