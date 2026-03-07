@@ -1,0 +1,4 @@
+interface:
+  display_name: "sentence-range-review"
+  short_description: "指定範囲の文章を校正し、修正文と要確認事項を分離して返す"
+  default_prompt: "Use $range-text-review-ja to review the specified text range, fix typos and notation inconsistencies, and report factual concerns separately without rewriting them."
