@@ -29,12 +29,12 @@ FrankenPHP の能力を最大限に発揮するために、Octane 経由で work
 ```bash
 php artisan octane:frankenphp \
   --host=0.0.0.0 \
-  --port="${APP_PORT:-8000}" \
+  --port="${APP_PORT:-8100}" \
   --workers="${OCTANE_WORKERS:-4}" \
   --max-requests="${OCTANE_MAX_REQUESTS:-500}"
 ```
 
-`--port="${APP_PORT:-8000}"` は、`APP_PORT` が未設定の場合に `8000` を使う指定です。  
+`--port="${APP_PORT:-8100}"` は、`APP_PORT` が未設定の場合に `8100` を使う指定です。  
 本書では `.env` で `APP_PORT=8100` を設定して進めるため、実際の待受ポートは `8100` になります。
 
 ## 2.4 環境を起動する
