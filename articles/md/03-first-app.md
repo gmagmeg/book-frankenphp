@@ -17,7 +17,7 @@ https://github.com/gmagmeg/book-frankenphp-docker/blob/main/app/Http/Controllers
 ```
 MERCURE_TRANSPORT_URL=mercure://publisher:frankenphp_mercure_local_dev_20260302@localhost/.well-known/mercure
 OCTANE_MERCURE_PUBLISHER_JWT_KEY=frankenphp_mercure_local_dev_20260302
-OCTANE_MERCURE_SUBSCRIBER_JWT_KEY=frankenphp_mercure_local_dev_2026002
+OCTANE_MERCURE_SUBSCRIBER_JWT_KEY=frankenphp_mercure_local_dev_20260302
 ```
 
 次に、コントローラーにメッセージをpushするコードを配置します。
@@ -31,10 +31,12 @@ $result = mercure_publish($topic, $payload, $options);
 ```
 
 この呼び出しだけでメッセージをpushできます。`Node.js`などのサーバーサイド`JavaScript`を別途用意する必要がありません。こんなに簡単に済むのは、FrankenPHP に SSE（Server-Sent Events）でメッセージを配信する`Mercure Hub`が標準で組み込まれているためです。そのため、アプリケーション側では `mercure_publish()` を呼び出すだけで配信処理を実装できます。
-なお`Mercure Hub`による配信先の分離については、後ほどの章で説明しますので、ここでは割愛いたします。
 
 ### Mercure Hubからのメッセージを受信する
-受信側では、`Mercure Hub` の購読エンドポイントに接続して、配信されたイベントを待ち受けます。ブラウザで確認する場合は、`EventSource` を使うと最小構成で動作確認できます。
+今回利用するソースコードはこちらです。
+https://github.com/gmagmeg/book-frankenphp-docker/blob/main/resources/views/mercure/receiver.blade.php
+
+受信側では、ブラウザ標準の `EventSource` API を使うことで `Mercure Hub` の購読エンドポイントへ接続できるので、特に新規ライブラリのインストールは必要ありません。
 
 ```js
 const topic = "https://example.com/messages/general";
@@ -52,4 +54,7 @@ eventSource.onerror = () => {
 };
 ```
 
-送信側で `mercure_publish()` を実行すると、同じ `topic` を購読しているクライアントにこのイベントが届きます。まずはコンソールに受信内容を表示し、メッセージが届くことを確認してください。
+FrankenPHPが提供できるのはバックエンドサーバーの世界までなので、ここからはFrankenPHPを離れ、フロントの世界に移ります。
+送信側で `mercure_publish()` を実行すると、同じ `topic` を購読しているクライアントにイベントが届きます。`event.data` には送信時のペイロードが文字列として入っているため、JSON として送信した場合は `JSON.parse()` でオブジェクトに変換します。ここまできたらまずはコンソールで受信内容を確認し、メッセージが届くことを確かめてください。
+
+todo：画像差し込むかどうか検討する
