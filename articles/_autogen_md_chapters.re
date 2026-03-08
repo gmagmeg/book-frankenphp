@@ -1,4 +1,6 @@
+//mdinclude[md/00-kakidashi.md]
 //mdinclude[md/01-what-is-frankenphp.md]
 //mdinclude[md/02-setup.md]
-//mdinclude[md/03-first-app.md]
-//mdinclude[md/04-103-early-hints.md]
+//mdinclude[md/03-jikkou-model.md]
+//mdinclude[md/04-first-app.md]
+//mdinclude[md/05-103-early-hints.md]

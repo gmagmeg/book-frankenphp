@@ -1,15 +1,13 @@
+# 構成が変わったからここも変更する
 PREDEF:
-  - preface.re
+  - 00-kakidashi.re
 
 CHAPS:
   - 01-what-is-frankenphp.re
   - 02-setup.re
-  - 03-first-app.re
-  - 04-basic-config.re
-  - 05-request-model.re
-  - 06-compare-apache-fpm.re
-  - 07-laravel.re
-  - 08-summary.re
+  - 03-jikkou-model.re
+  - 04-first-app.re
+  - 05-103-early-hints.re
 
 APPENDIX:
 

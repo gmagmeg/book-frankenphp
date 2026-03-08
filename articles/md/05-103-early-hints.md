@@ -2,12 +2,12 @@
 
 この章では、HTTP 103 Early Hints を利用してWebページの表示を速くする方法を説明します。
 
-## 4.1 103 Early Hintsとは
+## 103 Early Hintsとは
 
 HTTP 103 Early Hints は、サーバーが最終レスポンスを返す前に、ブラウザへ予備のHTTPヘッダーを送信できる仕組みです。ブラウザはこの情報をもとに、CSSやJavaScriptなどのリソースを事前に読み込み始めます。その結果、ページの表示速度が向上します。
 何か良さげな機能ですが、どうやったら利用できるのでしょうか。Franken phpでこの機能を利用するために、準備を進めていきます。
 
-## 4.2 HTTP/2、SSLの設定
+## HTTP/2、SSLの設定
 
 103 Early Hints は予備のHTTPヘッダーを並列に送る仕組みであるため、HTTP/2であることが前提です。HTTP/2はHTTPS上でのみ動作するため、HTTPS化が必要です。本来であればWebサーバーアプリケーション側に色々と設定が必要なのですが、FrankenPHP（Caddy）はHTTPS証明書の自動生成に対応しており、フラグを1つ追加するだけで有効化できます。
 `php artisan octane:frankenphp` の起動コマンドに `--https` フラグを追加します。
@@ -61,7 +61,7 @@ Early Hints Headerなし
 ![early-hints-no](../images/early-hints-no.png)
 
 
-## 4.4 この章のまとめ
+## この章のまとめ
 
 いかがだったでしょうか。NginxやApacheなどの他のWebサーバーアプリケーションだったらどれくらいの手順が必要なのか、ざっくり想像するだけでも大変な作業です。しかしFrankenPHPでは、起動コマンドに `--https` フラグを1つ追加するだけでHTTPS化とHTTP/2が有効になります。アプリケーション側のコードもわずか数行で済み、手軽にHTTP 103 Early Hintsを導入できます。
 

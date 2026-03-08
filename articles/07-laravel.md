@@ -1,5 +1,0 @@
-
-# LaravelをFrankenPHPで動かす
-
-この章では、LaravelアプリをFrankenPHPで動かす基本手順を確認します。
-
