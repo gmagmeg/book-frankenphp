@@ -5,6 +5,15 @@
 
 # Gemini Project Overview: Re:VIEW Template
 
+
+## 執筆内容
+- アプリケーションを作成しながら、FraneknPHPの概要を学ぶ。FrankenPHP入門、導入検討しているユーザーに向けた内容
+- 作成アプリケーション内容
+  - ユーザーからリクエストを受けると、バックグラウンドでCSVの生成が始まる
+  - CSVの生成が終わると、ユーザー側にワンタイムパスワード付きのpush通知が飛ぶ
+  - ユーザーはpush通知を受け取り、ワンタイムパスワードが一致すれば、CSVをダウンロードすることができる
+
+
 ## Directory Overview
 
 This directory contains a template for writing and publishing books using the Re:VIEW (version 5.x) typesetting system. It is maintained by TechBooster and is primarily configured for creating technical books, with support for various output formats including PDF, EPUB, and Web (HTML).
