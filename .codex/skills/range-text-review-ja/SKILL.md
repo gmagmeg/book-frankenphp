@@ -1,9 +1,9 @@
 ---
-name: range-text-review-ja
+name: range-text-review
 description: Review and edit only the user-specified text range in prose. Use when asked to proofread a chapter/section/line range, fix typos and notation inconsistencies, and keep the original intent. If statements may be factually wrong or misleading, do not rewrite those claims; list them as findings.
 ---
 
-# Range Text Review Ja
+# Range Text Review
 
 ## Goal
 
