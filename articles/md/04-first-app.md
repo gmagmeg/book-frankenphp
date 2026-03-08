@@ -1,18 +1,20 @@
-# メッセージ通知アプリ作成
+# メッセージ通知アプリの作成
+
+3章で下準備が完了したので、ここからはアプリケーション開発を通してFrankenPHPの組み込み機能を学んでいきましょう。
 
 ## 作成物の概要
 この章では、次の2つの画面を用意します。
-1. メッセージをpushする画面
+1. メッセージをプッシュする画面
 2. メッセージを受け取る画面
 
-まず 1. メッセージをpushする画面を作っていきましょう。
+まずは 1. メッセージをプッシュする画面を作っていきましょう。
 今回利用するソースコードはこちらです。
 https://github.com/gmagmeg/book-frankenphp-docker/blob/main/app/Http/Controllers/MercureController.php
 
 
-### Mercure Hubでメッセージをpushする
-メッセージをpushするために、FrankenPHPに組み込まれている Mercure Hub を利用します。まずは有効化のために `.env` ファイルを編集します。
-なお各`KEY`は開発を想定して平易な値を使用していますが、本運用時はセキュアな文字列に置き換えてください。
+### Mercure Hubでメッセージをプッシュする
+メッセージをプッシュするために、FrankenPHPに組み込まれている `Mercure Hub` を利用します。まずは、有効化のために `.env` ファイルを編集します。
+なお、各キーは開発を想定して平易な値を使用していますが、本番運用時はセキュアな文字列に置き換えてください。
 
 ```
 MERCURE_TRANSPORT_URL=mercure://publisher:frankenphp_mercure_local_dev_20260302@localhost/.well-known/mercure
@@ -20,7 +22,7 @@ OCTANE_MERCURE_PUBLISHER_JWT_KEY=frankenphp_mercure_local_dev_20260302
 OCTANE_MERCURE_SUBSCRIBER_JWT_KEY=frankenphp_mercure_local_dev_20260302
 ```
 
-次に、コントローラーにメッセージをpushするコードを配置します。
+次に、コントローラーにメッセージをプッシュするコードを配置します。
 
 ```php
 // リクエストの検証と、publish実行に必要な値(topic/payload/options)を組み立てる。
@@ -30,7 +32,7 @@ OCTANE_MERCURE_SUBSCRIBER_JWT_KEY=frankenphp_mercure_local_dev_20260302
 $result = mercure_publish($topic, $payload, $options);
 ```
 
-この呼び出しだけでメッセージをpushできます。`Node.js`などのサーバーサイド`JavaScript`を別途用意する必要がありません。こんなに簡単に済むのは、FrankenPHP に SSE（Server-Sent Events）でメッセージを配信する`Mercure Hub`が標準で組み込まれているためです。そのため、アプリケーション側では `mercure_publish()` を呼び出すだけで配信処理を実装できます。
+この呼び出しだけでメッセージをプッシュできます。`Node.js` などのサーバーサイド `JavaScript` を別途用意する必要がありません。これほど簡単に済むのは、FrankenPHPにSSE（Server-Sent Events）でメッセージを配信する `Mercure Hub` が標準で組み込まれているためです。そのため、アプリケーション側では `mercure_publish()` を呼び出すだけで配信処理を実装できます。
 
 ### Mercure Hubからのメッセージを受信する
 今回利用するソースコードはこちらです。
@@ -57,4 +59,4 @@ eventSource.onerror = () => {
 FrankenPHPが提供できるのはバックエンドサーバーの世界までなので、ここからはFrankenPHPを離れ、フロントの世界に移ります。
 送信側で `mercure_publish()` を実行すると、同じ `topic` を購読しているクライアントにイベントが届きます。`event.data` には送信時のペイロードが文字列として入っているため、JSON として送信した場合は `JSON.parse()` でオブジェクトに変換します。ここまできたらまずはコンソールで受信内容を確認し、メッセージが届くことを確かめてください。
 
-todo：画像差し込むかどうか検討する
+TODO: 画像を差し込むかどうか検討する
