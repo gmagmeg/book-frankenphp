@@ -57,9 +57,9 @@ https://localhost:8100
 
 コードを差し込んだ後は、103 Early Hints が実際に送信されているか確認しましょう。開発者ツールのネットワークタブにEarly Hints Headerが増えているのが確認できるはずです。
 
-Early Hints Headerあり@<icon>{../images/early-hints-headers}
+Early Hints Headerあり@<icon>{early-hints-headers}
 
-Early Hints Headerなし@<icon>{../images/early-hints-no}
+Early Hints Headerなし@<icon>{early-hints-no}
 
 == この章のまとめ
 

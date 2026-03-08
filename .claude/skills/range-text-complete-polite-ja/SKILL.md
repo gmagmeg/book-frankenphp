@@ -18,6 +18,7 @@ description: Complete and refine only the user-specified text range in Japanese 
 2. 文章を補完する。
 - 途切れた説明、論理の飛躍、接続不足を補い、読み手が理解できる状態まで整える。
 - ユーザーの意図を変えない。新規の主張や未確認情報は追加しない。
+- 画像パスに関してだけは修正と指摘を行わない
 
 3. 文体を統一する。
 - 編集対象範囲をです・ます調にそろえる。
