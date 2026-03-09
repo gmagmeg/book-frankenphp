@@ -2,19 +2,19 @@
 
 == 事前確認
 
-この章では、この本で利用するFrankenPHPの開発環境を構築します。環境情報はこちらに用意しているので、@<tt>{git clone} して進めてください。https://github.com/gmagmeg/book-frankenphp-docker
+この章では、この本で利用するFrankenPHPの開発環境を構築します。開発環境はこちらに用意しているので、@<tt>{git clone} して進めてください。https://github.com/gmagmeg/book-frankenphp-docker
 
 環境構築にあたり、次の環境が整っている前提で進めます。
 
-環境情報: - macOS（またはLinux）- Git - ターミナル- Docker Engine が動作していること
+前提環境: - macOS（またはLinux）- Git - ターミナル- Docker Engine が動作していること
 
- * Windowsを利用する場合は、WSL2上で作業する前提で進めます。
+ * Windows を利用する場合は、WSL2上で作業する前提で進めます。
 
 == 環境構築
 
-構成は次のとおりです。- アプリケーションサーバー: FrankenPHP（Laravel Octane Workerモード）- フレームワーク: Laravel 12 - データベース: PostgreSQL - 公開ポート: @<tt>{8100}
+構成は次のとおりです。- アプリケーションサーバー: FrankenPHP - フレームワーク: Laravel 12 - データベース: PostgreSQL - 公開ポート: @<tt>{8100}
 
-FrankenPHP の能力を最大限に発揮するために、Octane 経由で Workerモードで起動します。（OctaneとWorkerモードは次の章で詳しく説明します）。本書のコンテナでは、@<tt>{start-container.sh} から次のように起動します。
+FrankenPHP の能力を最大限に発揮するために、Octane 経由で Workerモードを利用して起動します。Octane と Workerモードは次の章で詳しく説明します。本書のコンテナでは、@<tt>{start-container.sh} から次のように起動します。
 
 //emlist[][bash]{
 php artisan octane:frankenphp \
@@ -47,4 +47,4 @@ curl -i http://127.0.0.1:8100
 
 この時点で、次を満たしていれば本章の開発準備は完了です。- @<tt>{book-frankenphp-app} と @<tt>{book-frankenphp-db} が起動している- ホストの @<tt>{8100} ポートで Laravel アプリケーションへアクセスできる- マイグレーションが適用済みである
 
-次の章ではFrankenPHPの1番の強みであるWorkerモードと、FrankenPHPをより高速化するOctaneについて説明します。アプリケーションの実装まで、もう少々お待ちください。
+次の章では、FrankenPHP の大きな特徴である Workerモードと、FrankenPHP 上で起動済みの Laravel アプリケーションを効率よく扱う、拡張パッケージOctane について説明します。アプリケーションの実装まで、もう少々お待ちください。

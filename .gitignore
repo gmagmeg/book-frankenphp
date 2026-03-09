@@ -10,4 +10,5 @@ articles/*.html
 articles/*.xml
 articles/*.txt
 articles/ReVIEW-Template-text/*
-articles/_refiles/*
+articles/*.re
+articles/_refiles/*.re
