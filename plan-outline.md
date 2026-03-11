@@ -22,6 +22,7 @@
 
 ## 章別アウトライン
 
+OK
 ### 1. `articles/md/00-kakidashi.md`
 
 - `# はじめに`
