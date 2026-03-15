@@ -1,0 +1,78 @@
+<svg width="560" height="280" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif; fill: #222; }
+  </style>
+
+  <!-- ===== 通常のフロー ===== -->
+  <rect x="0" y="0" width="560" height="115" fill="#f0f0f0"/>
+  <rect x="0" y="0" width="560" height="30" fill="#aaa"/>
+  <text x="280" y="20" text-anchor="middle" font-size="13" fill="white" font-weight="bold">通常のフロー</text>
+
+  <!-- リクエスト -->
+  <rect x="15" y="55" width="65" height="28" rx="3" fill="#d0d0d0" stroke="#999" stroke-width="1"/>
+  <text x="47" y="74" text-anchor="middle" font-size="11">リクエスト</text>
+  <line x1="80" y1="69" x2="89" y2="69" stroke="#555" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- サーバー処理 -->
+  <rect x="90" y="55" width="150" height="28" rx="3" fill="#b8b8b8" stroke="#888" stroke-width="1"/>
+  <text x="165" y="74" text-anchor="middle" font-size="12">サーバー処理</text>
+  <line x1="240" y1="69" x2="249" y2="69" stroke="#555" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- HTML受信 -->
+  <rect x="250" y="55" width="65" height="28" rx="3" fill="#d0d0d0" stroke="#999" stroke-width="1"/>
+  <text x="282" y="74" text-anchor="middle" font-size="11">HTML 受信</text>
+  <line x1="315" y1="69" x2="324" y2="69" stroke="#555" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- CSS/JS取得 -->
+  <rect x="325" y="55" width="110" height="28" rx="3" fill="white" stroke="#555" stroke-width="1"/>
+  <text x="380" y="74" text-anchor="middle" font-size="12" fill="#222">CSS/JS 取得</text>
+  <line x1="435" y1="69" x2="444" y2="69" stroke="#555" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- 描画 -->
+  <rect x="445" y="55" width="65" height="28" rx="3" fill="#d0d0d0" stroke="#999" stroke-width="1"/>
+  <text x="477" y="74" text-anchor="middle" font-size="12">描画</text>
+
+  <!-- ===== 103 Early Hints あり ===== -->
+  <rect x="0" y="119" width="560" height="161" fill="#fafafa"/>
+  <rect x="0" y="119" width="560" height="30" fill="#aaa"/>
+  <text x="280" y="139" text-anchor="middle" font-size="13" fill="white" font-weight="bold">103 Early Hints あり</text>
+
+  <!-- リクエスト -->
+  <rect x="15" y="162" width="65" height="28" rx="3" fill="#d0d0d0" stroke="#999" stroke-width="1"/>
+  <text x="47" y="181" text-anchor="middle" font-size="11">リクエスト</text>
+  <line x1="80" y1="176" x2="89" y2="176" stroke="#555" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- 103受信 -->
+  <rect x="90" y="162" width="65" height="28" rx="3" fill="white" stroke="#555" stroke-width="1"/>
+  <text x="122" y="181" text-anchor="middle" font-size="11" fill="#222">103 受信</text>
+
+  <!-- dashed line: サーバー処理中 -->
+  <line x1="158" y1="176" x2="248" y2="176" stroke="#aaa" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#a)"/>
+  <text x="202" y="170" text-anchor="middle" font-size="10" fill="#999">サーバー処理中</text>
+
+  <!-- HTML受信 -->
+  <rect x="250" y="162" width="65" height="28" rx="3" fill="#d0d0d0" stroke="#999" stroke-width="1"/>
+  <text x="282" y="181" text-anchor="middle" font-size="11">HTML 受信</text>
+  <line x1="315" y1="176" x2="324" y2="176" stroke="#555" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- 描画（CSS/JS取得の位置に揃う） -->
+  <rect x="325" y="162" width="65" height="28" rx="3" fill="#d0d0d0" stroke="#999" stroke-width="1"/>
+  <text x="357" y="181" text-anchor="middle" font-size="12">描画</text>
+
+  <!-- connector: 103受信 → CSS/JS並行取得 -->
+  <line x1="122" y1="190" x2="122" y2="208" stroke="#aaa" stroke-width="1" stroke-dasharray="3,2"/>
+  <polygon points="118,206 126,206 122,212" fill="#aaa"/>
+
+  <!-- CSS/JS並行取得 -->
+  <rect x="90" y="212" width="160" height="28" rx="3" fill="#b8b8b8" stroke="#777" stroke-width="1"/>
+  <text x="170" y="231" text-anchor="middle" font-size="12">CSS/JS 並行取得</text>
+
+  <!-- 縦の点線: 描画開始タイミングの比較 -->
+  <line x1="325" y1="50" x2="325" y2="260" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="329" y="258" font-size="10" fill="#aaa">描画開始</text>
+</svg>

@@ -5,15 +5,43 @@
 ## 103 Early Hintsとは
 
 HTTP 103 Early Hints は、サーバーが最終レスポンスを返す前に、ブラウザへ予備のHTTPヘッダーを送信できる仕組みです。ブラウザはこの情報をもとに、CSSやJavaScriptなどのリソースを事前に読み込み始め、最終的なHTMLが届く前から、表示に必要な準備を先回りして進められるようになります。つまりページの表示速度を向上させられるということです。
+![103 Early Hints のリクエスト処理フロー比較](images/early-hints-flow.png)
+
 便利そうな機能ですが、どのように利用できるのでしょうか。FrankenPHPでは、この機能を比較的少ない手順で試せます。この節では、そのための準備を進めていきます。
 
 ## HTTP/2、SSLの設定
 
-103 Early Hints は予備のHTTPヘッダーを並列に送る仕組みであるため、HTTP/2であることが前提です。HTTP/2はHTTPS上でのみ動作するため、HTTPS化が必要です。本来であればWebサーバーアプリケーション側にいろいろと設定が必要なのですが、FrankenPHP（Caddy）はHTTPS証明書の自動生成に対応しており、フラグを1つ追加するだけで有効化できます。
+103 Early Hints は予備のHTTPヘッダーを並列に送る仕組みであるため、HTTPSかつHTTP/2であることが前提です。この環境を整えるには本来であればWebサーバーアプリケーション側にいろいろと設定が必要なのですが、FrankenPHP（Caddy）はHTTPS証明書の自動生成に対応しており、フラグを1つ追加するだけで有効化できます。
 `php artisan octane:frankenphp` の起動コマンドに `--https` フラグを追加します。
 
 ```bash
 php artisan octane:frankenphp --https --watch
+```
+
+FrankenPHP は内部で、Caddy が受け取ったリクエスト情報を CGI 環境変数に変換し、PHP の `$_SERVER` へ渡しています。`--https` フラグを付けて起動すると、この処理の中で `HTTPS=on` が自動的にセットされます。以下は `frankenphp.go` の該当箇所の抜粋です。
+
+```go
+// frankenphp/frankenphp.go（抜粋）
+
+/**
+ * Caddy のリクエストコンテキストから CGI 環境変数を生成する。
+ * 生成した変数は PHP スレッドの $_SERVER にマッピングされる。
+ * CGI/1.1 標準（RFC 3875）に準拠した変数名を使用している。
+ */
+func buildEnv(r *http.Request, fc *FrankenPHPContext) (map[string]string, error) {
+    env := make(map[string]string)
+
+    // TLS 接続、または X-Forwarded-Proto が https の場合に HTTPS=on をセット。
+    // PHP 側では $_SERVER['HTTPS'] === 'on' で判定できる。
+    if r.TLS != nil || fc.trustForwardedProtoHeader &&
+        r.Header.Get("X-Forwarded-Proto") == "https" {
+        env["HTTPS"] = "on"
+    }
+
+    // ...（SERVER_NAME, REQUEST_METHOD など CGI 標準変数の設定）
+
+    return env, nil
+}
 ```
 
 ### 証明書関連の設定

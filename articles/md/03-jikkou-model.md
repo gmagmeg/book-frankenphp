@@ -74,6 +74,69 @@ php artisan octane:frankenphp
 
 Octaneを導入したLaravelアプリケーションは、サーバー起動時に一度だけ初期化されます。その後は、起動済みのアプリケーションがメモリに保持されたまま、受け取ったリクエストを順番に処理していきます。
 
+この仕組みを実現するために、OctaneはLaravelの標準エントリーポイントである `public/index.php` をWorkerスクリプトに差し替えます。Workerスクリプトはサーバー起動時に一度だけ実行され、Laravelアプリケーションのインスタンスを `$app` に保持します。以降のリクエスト処理では、この `$app` を使い回すことで、アプリケーションの再起動なしにリクエストを処理できます。
+
+`php artisan octane:install --server=frankenphp` を実行すると、次のようなWorkerスクリプトが `public/frankenphp-worker.php` に生成されます。
+
+```php
+<?php
+
+use Laravel\Octane\FrankenPhp\FrankenPhpClient;
+use Laravel\Octane\FrankenPhp\ServerStateFile;
+use Laravel\Octane\Worker;
+
+// アプリケーションを一度だけ起動し、$app に保持する
+$app = require __DIR__.'/../bootstrap/app.php';
+
+$worker = tap(new Worker(
+    new \Laravel\Octane\ApplicationFactory(__DIR__.'/../bootstrap/app.php'),
+    $client = new FrankenPhpClient(
+        new ServerStateFile($_SERVER['STATE_FILE']
+            ?? sys_get_temp_dir().'/frankenphp-octane-server-state.json'),
+    )
+))->boot();
+
+// リクエストをループで処理する（$app は再起動しない）
+while (
+    frankenphp_handle_request(function () use ($worker, $client): void {
+        $worker->handle(...$client->marshalRequest(new \Laravel\Octane\RequestContext));
+    })
+);
+
+$worker->terminate();
+```
+
+`$worker->boot()` の内部では、`Worker` クラスが `$this->app` プロパティにアプリケーションのインスタンスを保持します。以下は `vendor/laravel/octane/src/Worker.php` の抜粋です。
+
+```php
+// vendor/laravel/octane/src/Worker.php（抜粋）
+class Worker
+{
+    /** 起動済みのアプリケーションインスタンスを保持するプロパティ */
+    protected $app;
+
+    /**
+     * サーバー起動時に1回だけ呼ばれる。
+     * アプリケーションを生成し $this->app に格納する。
+     */
+    public function boot(array $initialInstances = []): static
+    {
+        $this->app = $app = $this->appFactory->createApplication();
+        // ...
+    }
+
+    /**
+     * リクエストごとに呼ばれる。
+     * $this->app を再利用してリクエストを処理する。
+     */
+    public function handle(Request $request, mixed $context = null): void
+    {
+        CurrentApplication::set($this->app);
+        // ...
+    }
+}
+```
+
 通常のPHP実行環境では、リクエストごとにフレームワークや設定ファイルの読み込みが発生します。これに対して Octane + Workerモードでは、初期化コストをサーバー起動時の1回にまとめられるため、リクエストごとのオーバーヘッドを大きく減らせます。Octaneを導入することで、FrankenPHPのWorkerモードが持つ起動コスト削減の効果を、Laravelアプリケーションでも活かせるようになります。
 
 ## この章のまとめ

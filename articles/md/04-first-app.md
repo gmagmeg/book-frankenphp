@@ -1,5 +1,7 @@
 # メッセージ通知アプリの作成
 
+[] ここからは実行画面のスクリーンショットを貼り付けていく
+
 3章で下準備が完了したので、ここからはアプリケーション開発を通してFrankenPHPの組み込み機能を学んでいきましょう。次の要件を満たすアプリケーションを作成していきます。
 
 ## 作成するアプリケーションの概要
@@ -48,6 +50,9 @@ $result = mercure_publish($topic, $payload, $options);
 今回利用するソースコードはこちらです。
 https://github.com/gmagmeg/book-frankenphp-docker/blob/main/resources/views/mercure/receiver.blade.php
 
+FrankenPHPが提供できるのはバックエンドサーバーの世界までなので、ここからはFrankenPHPを離れ、フロントの世界に移ります。
+送信側で `mercure_publish()` を実行すると、同じ `topic` を購読しているクライアントにイベントが届きます。`event.data` には送信時のペイロードが文字列として入っているため、JSON として送信した場合は `JSON.parse()` でオブジェクトに変換します。ここまできたらまずはコンソールで受信内容を確認し、メッセージが届くことを確かめてください。
+
 受信側では、ブラウザ標準の `EventSource` API を使うことで `Mercure Hub` の購読エンドポイントへ接続できるので、特に新規ライブラリのインストールは必要ありません。
 
 ```js
@@ -55,18 +60,6 @@ const topic = "https://example.com/messages/general";
 const subscribeUrl = `/.well-known/mercure?topic=${encodeURIComponent(topic)}`;
 
 const eventSource = new EventSource(subscribeUrl);
-
-eventSource.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-  console.log("受信したメッセージ:", message);
-};
-
-eventSource.onerror = () => {
-  console.error("Mercure Hubとの接続でエラーが発生しました。");
-};
+eventSource.onmessage = (event) => {〜};
+eventSource.onerror = () => {〜};
 ```
-
-FrankenPHPが提供できるのはバックエンドサーバーの世界までなので、ここからはFrankenPHPを離れ、フロントの世界に移ります。
-送信側で `mercure_publish()` を実行すると、同じ `topic` を購読しているクライアントにイベントが届きます。`event.data` には送信時のペイロードが文字列として入っているため、JSON として送信した場合は `JSON.parse()` でオブジェクトに変換します。ここまできたらまずはコンソールで受信内容を確認し、メッセージが届くことを確かめてください。
-
-TODO: 画像を差し込むかどうか検討する
