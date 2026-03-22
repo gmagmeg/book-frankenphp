@@ -116,20 +116,46 @@ header('X-Accel-Redirect: /private-files/sample.txt');
 
 LaravelはSymfony HttpFoundationの `BinaryFileResponse` を通じてX-Sendfileをネイティブサポートしています。`trustXSendfileTypeHeader()` を呼び出すことで、Caddyfileで設定した `X-Sendfile-Type` ヘッダーの値を元に適切なヘッダーが自動的に付与されます。
 
+前章で生成したOTP（JWT）の検証もここで行います。`lcobucci/jwt` の `validator()->assert()` に制約を渡すことで、署名の正当性・有効期限・ファイル名の一致を一括チェックできます。
+
 ```php
 <?php
 
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
+use Lcobucci\JWT\Validation\Constraint\StrictValidAt;
+use Lcobucci\Clock\SystemClock;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DownloadController extends Controller
 {
     public function download(Request $request, string $filename): BinaryFileResponse
     {
-        // アクセス権チェック（例: 認証済みユーザーのみ許可）
-        // abort_unless($request->user(), 403, 'ログインが必要です。');
+        // OTP（JWT）の検証
+        $otp = $request->query('otp');
+        abort_unless($otp, 403, 'OTPが必要です。');
+
+        $jwtConfig = Configuration::forSymmetricSigner(
+            new Sha256(),
+            InMemory::plainText(config('services.jwt.secret'))
+        );
+
+        try {
+            $token = $jwtConfig->parser()->parse($otp);
+            $jwtConfig->validator()->assert($token,
+                new SignedWith($jwtConfig->signer(), $jwtConfig->signingKey()),
+                new StrictValidAt(SystemClock::fromUTC()),  // 有効期限チェック
+            );
+            // トークンに埋め込まれたファイル名とリクエストのファイル名が一致するか確認
+            abort_unless($token->claims()->get('file') === $filename, 403, '不正なOTPです。');
+        } catch (\Throwable) {
+            abort(403, '無効なOTPです。');
+        }
 
         // パストラバーサル対策
         abort_if(str_contains($filename, '..'), 400, '不正なファイルパスです。');
@@ -147,7 +173,7 @@ class DownloadController extends Controller
 }
 ```
 
-ルートはシンプルに定義します。
+ルートはシンプルに定義します。OTPはクエリパラメータ（`?otp=...`）で受け取ります。
 
 ```php
 Route::get('/download/{filename}', [DownloadController::class, 'download'])

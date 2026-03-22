@@ -13,6 +13,12 @@
 
 1.と2.はFrankenPHP固有の機能と直接関係しないため、ソースコードの紹介にとどめて簡潔に扱います。
 
+//image[hakkou][メッセージ発行画面]{
+//}
+
+//image[zyushin][メッセージ受信画面]{
+//}
+
 == 作成物の概要
 
 この章では、次の2つの画面を用意します。1. メッセージをプッシュする画面2. メッセージを受け取る画面
@@ -24,7 +30,9 @@
 メッセージをプッシュするために、FrankenPHPに組み込まれている @<tt>{Mercure Hub} を利用します。まずは、有効化のために @<tt>{.env} ファイルを編集します。なお、各キーは開発を想定して平易な値を使用していますが、本番運用時はセキュアな文字列に置き換えてください。
 
 //emlist{
-MERCURE_TRANSPORT_URL=mercure://publisher:frankenphp_mercure_local_dev_20260302@localhost/.well-known/mercure
+MERCURE_TRANSPORT_URL=
+mercure://publisher:frankenphp_mercure_local_dev_20260302
+@localhost/.well-known/mercure
 OCTANE_MERCURE_PUBLISHER_JWT_KEY=frankenphp_mercure_local_dev_20260302
 OCTANE_MERCURE_SUBSCRIBER_JWT_KEY=frankenphp_mercure_local_dev_20260302
 //}
@@ -33,7 +41,8 @@ OCTANE_MERCURE_SUBSCRIBER_JWT_KEY=frankenphp_mercure_local_dev_20260302
 
 //emlist[][php]{
 // リクエストの検証と、publish実行に必要な値(topic/payload/options)を組み立てる。
-['topic' => $topic, 'payload' => $payload, 'options' => $options] = $this->preparePublishRequest($request);
+['topic' => $topic, 'payload' => $payload, 'options' => $options]
+  = $this->preparePublishRequest($request);
 
 // Mercureへメッセージを送信する。
 $result = mercure_publish($topic, $payload, $options);
@@ -41,9 +50,53 @@ $result = mercure_publish($topic, $payload, $options);
 
 この呼び出しだけでメッセージをプッシュできます。@<tt>{Node.js} などのサーバーサイド @<tt>{JavaScript} を別途用意する必要がありません。これほど簡単に済むのは、FrankenPHPにSSE（Server-Sent Events）でメッセージを配信する @<tt>{Mercure Hub} が標準で組み込まれているためです。そのため、アプリケーション側では @<tt>{mercure_publish()} を呼び出すだけで配信処理を実装できます。
 
+==== OTPの生成
+
+送信するペイロードには、ダウンロード認証用のOTPを含めます。OTPには @<tt>{lcobucci/jwt} で生成したJWTを採用します。JWTは署名済みのトークンで、有効期限やダウンロード対象ファイル名などを埋め込めます。これにより、受け取ったユーザーだけが使用できる短命な認証情報として機能します。
+
+FrankenPHPの公式ドキュメントでも @<tt>{symfony/mercure} と @<tt>{lcobucci/jwt} の組み合わせが紹介されており、本書でもこれに沿って実装します。まずパッケージをインストールします。
+
+//emlist[][bash]{
+composer require symfony/mercure lcobucci/jwt
+//}
+
+次のコードでOTPを生成し、ペイロードに含めます。
+
+//emlist[][php]{
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key\InMemory;
+
+// HMAC-SHA256で署名したJWTを生成する設定
+$jwtConfig = Configuration::forSymmetricSigner(
+    new Sha256(),
+    InMemory::plainText(config('services.jwt.secret'))
+);
+
+// 有効期限10分・ダウンロード対象ファイル名を埋め込んだOTPを生成する
+$otp = $jwtConfig->builder()
+    ->issuedAt(new \DateTimeImmutable())
+    ->expiresAt(new \DateTimeImmutable('+10 minutes'))
+    ->withClaim('file', $filename)
+    ->getToken($jwtConfig->signer(), $jwtConfig->signingKey())
+    ->toString();
+
+// OTPをMercureのペイロードに含めて送信する
+$payload = json_encode([
+    'message' => 'CSVの生成が完了しました',
+    'otp'     => $otp,
+    'file'    => $filename,
+]);
+$result = mercure_publish($topic, $payload);
+//}
+
+このOTPは @<tt>{lcobucci/jwt} が持つJWT標準の有効期限・署名検証の仕組みを活用しており、有効期限切れや改ざんされたトークンは次章のダウンロード処理で自動的に弾かれます。
+
 === Mercure Hubからのメッセージを受信する
 
 今回利用するソースコードはこちらです。https://github.com/gmagmeg/book-frankenphp-docker/blob/main/resources/views/mercure/receiver.blade.php
+
+FrankenPHPが提供できるのはバックエンドサーバーの世界までなので、ここからはFrankenPHPを離れ、フロントの世界に移ります。送信側で @<tt>{mercure_publish()} を実行すると、同じ @<tt>{topic} を購読しているクライアントにイベントが届きます。@<tt>{event.data} には送信時のペイロードが文字列として入っているため、JSON として送信した場合は @<tt>{JSON.parse()} でオブジェクトに変換します。ここまできたらまずはコンソールで受信内容を確認し、メッセージが届くことを確かめてください。
 
 受信側では、ブラウザ標準の @<tt>{EventSource} API を使うことで @<tt>{Mercure Hub} の購読エンドポイントへ接続できるので、特に新規ライブラリのインストールは必要ありません。
 
@@ -52,17 +105,32 @@ const topic = "https://example.com/messages/general";
 const subscribeUrl = `/.well-known/mercure?topic=${encodeURIComponent(topic)}`;
 
 const eventSource = new EventSource(subscribeUrl);
-
 eventSource.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-  console.log("受信したメッセージ:", message);
+    const data = JSON.parse(event.data);
+    // 受信したOTPとファイル名を画面に表示する
+    document.getElementById('otp-display').textContent = data.otp;
+    document.getElementById('filename-display').textContent = data.file;
+    document.getElementById('download-area').classList.remove('hidden');
 };
-
 eventSource.onerror = () => {
-  console.error("Mercure Hubとの接続でエラーが発生しました。");
+    console.error('Mercureとの接続でエラーが発生しました。');
 };
 //}
 
-FrankenPHPが提供できるのはバックエンドサーバーの世界までなので、ここからはFrankenPHPを離れ、フロントの世界に移ります。送信側で @<tt>{mercure_publish()} を実行すると、同じ @<tt>{topic} を購読しているクライアントにイベントが届きます。@<tt>{event.data} には送信時のペイロードが文字列として入っているため、JSON として送信した場合は @<tt>{JSON.parse()} でオブジェクトに変換します。ここまできたらまずはコンソールで受信内容を確認し、メッセージが届くことを確かめてください。
+ユーザーは画面に表示されたOTPをコピーし、ダウンロードフォームに入力します。OTPの検証とファイル配信については次章で説明します。
 
-TODO: 画像を差し込むかどうか検討する
+=== バックグラウンドでのCSV生成
+
+CSV生成はFrankenPHP固有の機能と直接関係しないため、実装の詳細はソースコードを参照してください。https://github.com/gmagmeg/book-frankenphp-docker/blob/main/app/Jobs/GenerateCsvJob.php
+
+Laravelの @<tt>{dispatch()} でジョブをキューに投入するだけで、リクエスト完了後にバックグラウンドで処理が進みます。CSV生成が完了したタイミングで、上記のMercure pushとOTP生成を呼び出しています。
+
+== この章のまとめ
+
+この章では、FrankenPHPに組み込まれたMercure Hubを使って、リアルタイム通知機能を実装しました。
+
+ * @<b>{Mercure Hub}: FrankenPHPに内蔵されており、@<tt>{mercure_publish()} を呼び出すだけでSSEによるリアルタイム通知を実現できます。Node.jsなどの別サーバーは不要です。
+ * @<b>{OTP}: @<tt>{lcobucci/jwt} を用いたJWTをOTPとして生成し、Mercureのペイロードに含めて送信します。有効期限付きの署名済みトークンとして機能するため、短命な認証情報に適しています。
+ * @<b>{EventSource API}: ブラウザ標準のAPIのみで購読でき、新規ライブラリのインストールは不要です。
+
+次の章では、受け取ったOTPを使ってCSVをセキュアにダウンロードする、X-Sendfileの実装を見ていきます。

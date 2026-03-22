@@ -27,12 +27,14 @@ FrankenPHP の能力を最大限に発揮するために、Octane 経由で Work
 ```bash
 php artisan octane:frankenphp \
   --host=localhost \
-  --port="${APP_PORT:-8100}" \
+  --port="${APP_PORT:-8000}" \
   --workers="${OCTANE_WORKERS:-4}" \
-  --max-requests="${OCTANE_MAX_REQUESTS:-500}"
+  --max-requests="${OCTANE_MAX_REQUESTS:-500}" \
+  --caddyfile=/app/Caddyfile \
+  --watch
 ```
 
-`--port="${APP_PORT:-8100}"` は、`APP_PORT` が未設定の場合に `8100` を使う指定です。  
+`--port="${APP_PORT:-8000}"` は、`APP_PORT` が未設定の場合に `8000` を使う指定です。
 本書では `.env` で `APP_PORT=8100` を設定して進めるため、実際の待受ポートは `8100` になります。
 
 `frankenphp` ディレクトリで、次の順に実行します。
@@ -47,10 +49,12 @@ docker compose exec app php artisan migrate --force
 
 ```bash
 docker compose ps
-curl -i http://127.0.0.1:8100
+curl -ik https://127.0.0.1:8100
 ```
 
-`HTTP/1.1 200` が返れば準備完了です。
+本書の環境では Caddyfile に `tls internal` を設定しているため、FrankenPHP は **HTTPS** で動作します。そのため `curl` には自己署名証明書を許容する `-k` オプションが必要です。ブラウザでアクセスする場合も、自己署名証明書に関するセキュリティ警告が表示されます。
+
+`HTTP/2 200` が返れば準備完了です。
 
 ## ここまでの確認ポイント
 この時点で、次を満たしていれば本章の開発準備は完了です。
