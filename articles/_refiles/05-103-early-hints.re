@@ -73,7 +73,7 @@ sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keyc
 https://localhost:8100
 //}
 
-== 4.3 アプリケーションコードの設定
+== アプリケーションコードの設定
 
 下準備ができたので、アプリケーションにコードを差し込みます。といっても、書くコードは少なく、これだけで済みます。
 

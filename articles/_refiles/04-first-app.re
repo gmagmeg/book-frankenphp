@@ -31,10 +31,14 @@
 
 //emlist{
 MERCURE_TRANSPORT_URL=
-mercure://publisher:frankenphp_mercure_local_dev_20260302
-@localhost/.well-known/mercure
-OCTANE_MERCURE_PUBLISHER_JWT_KEY=frankenphp_mercure_local_dev_20260302
-OCTANE_MERCURE_SUBSCRIBER_JWT_KEY=frankenphp_mercure_local_dev_20260302
+mercure://publisher:frankenphp_mercure_local_dev_20260302@
+localhost/.well-known/mercure
+
+OCTANE_MERCURE_PUBLISHER_JWT_KEY=
+frankenphp_mercure_local_dev_20260302
+
+OCTANE_MERCURE_SUBSCRIBER_JWT_KEY=
+frankenphp_mercure_local_dev_20260302
 //}
 
 次に、コントローラーにメッセージをプッシュするコードを配置します。
@@ -50,7 +54,7 @@ $result = mercure_publish($topic, $payload, $options);
 
 この呼び出しだけでメッセージをプッシュできます。@<tt>{Node.js} などのサーバーサイド @<tt>{JavaScript} を別途用意する必要がありません。これほど簡単に済むのは、FrankenPHPにSSE（Server-Sent Events）でメッセージを配信する @<tt>{Mercure Hub} が標準で組み込まれているためです。そのため、アプリケーション側では @<tt>{mercure_publish()} を呼び出すだけで配信処理を実装できます。
 
-==== OTPの生成
+==== OTP（ワンタイムパスワード）の生成
 
 送信するペイロードには、ダウンロード認証用のOTPを含めます。OTPには @<tt>{lcobucci/jwt} で生成したJWTを採用します。JWTは署名済みのトークンで、有効期限やダウンロード対象ファイル名などを埋め込めます。これにより、受け取ったユーザーだけが使用できる短命な認証情報として機能します。
 

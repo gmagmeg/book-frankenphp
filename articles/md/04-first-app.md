@@ -30,12 +30,17 @@ https://github.com/gmagmeg/book-frankenphp-docker/blob/main/app/Http/Controllers
 メッセージをプッシュするために、FrankenPHPに組み込まれている `Mercure Hub` を利用します。まずは、有効化のために `.env` ファイルを編集します。
 なお、各キーは開発を想定して平易な値を使用していますが、本番運用時はセキュアな文字列に置き換えてください。
 
+* 紙面の都合上、改行を入れていますが、実際に記載するときは１行に繋げてください
 ```
 MERCURE_TRANSPORT_URL=
-mercure://publisher:frankenphp_mercure_local_dev_20260302
-@localhost/.well-known/mercure
-OCTANE_MERCURE_PUBLISHER_JWT_KEY=frankenphp_mercure_local_dev_20260302
-OCTANE_MERCURE_SUBSCRIBER_JWT_KEY=frankenphp_mercure_local_dev_20260302
+mercure://publisher:frankenphp_mercure_local_dev_20260302@
+localhost/.well-known/mercure
+
+OCTANE_MERCURE_PUBLISHER_JWT_KEY=
+frankenphp_mercure_local_dev_20260302
+
+OCTANE_MERCURE_SUBSCRIBER_JWT_KEY=
+frankenphp_mercure_local_dev_20260302
 ```
 
 次に、コントローラーにメッセージをプッシュするコードを配置します。

@@ -71,7 +71,7 @@ sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keyc
 https://localhost:8100
 ```
 
-## 4.3 アプリケーションコードの設定
+## アプリケーションコードの設定
 
 下準備ができたので、アプリケーションにコードを差し込みます。といっても、書くコードは少なく、これだけで済みます。
 ```php
@@ -82,7 +82,7 @@ https://localhost:8100
 
 コードを差し込んだ後は、103 Early Hints が実際に送信されているか確認しましょう。開発者ツールのネットワークタブに Early Hints Header が増えていることを確認できるはずです。
 
-![Early Hints Headerあり](early-hints-headers.png)
+![Early Hints Headerあり](images/early-hints-headers.png)
 
 ![Early Hints Headerなし](images/early-hints-no.png)
 
