@@ -49,7 +49,7 @@ docker compose exec app php artisan migrate --force
 
 ```bash
 docker compose ps
-curl -ik https://127.0.0.1:8100
+curl -ik https://localhost:8100
 ```
 
 本書の環境では Caddyfile に `tls internal` を設定しているため、FrankenPHP は **HTTPS** で動作します。そのため `curl` には自己署名証明書を許容する `-k` オプションが必要です。ブラウザでアクセスする場合も、自己署名証明書に関するセキュリティ警告が表示されます。

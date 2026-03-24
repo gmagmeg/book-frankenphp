@@ -1,6 +1,6 @@
 # X-Sendfile（X-Accel-Redirect）で効率的にファイルを配信
 
-この章ではX-Accel-Redirectを使って、ファイル配信の効率化を行なっていきます。
+この章ではX-Sendfile（X-Accel-Redirect）を使って、ファイル配信の効率化を行なっていきます。
 
 ## 概要
 
