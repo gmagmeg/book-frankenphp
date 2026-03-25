@@ -2,7 +2,7 @@
 
 == はじめに
 
-FrankenPHPは、Go言語製Webサーバー「Caddy」にPHPランタイムを統合したPHPアプリケーションサーバーで、作者はKévin Dunglas、初回安定版リリース日は2024年1月と、まだまだ若いOSSです。公式リポジトリは @<tt>{https://github.com/php/frankenphp} で、GitHubのURLをよく見るとわかるのですが、PHPの公式リポジトリとして扱われています。これは2025年5月、PHPを支援する非営利組織 The PHP Foundationからの公式サポートが公表され、今日ではPHP実行環境の有力な選択肢の1つとして、注目されています。出典: https://thephp.foundation/blog/2025/05/15/frankenphp/
+FrankenPHPは、Go言語製Webサーバー Caddy にPHPランタイムを統合したPHPアプリケーションサーバーです。作者はKévin Dunglas、初回安定版のリリースは2024年1月で、まだまだ若いOSSです。@<br>{}公式リポジトリは @<tt>{https://github.com/php/frankenphp} で、GitHubのURLをよく見るとわかるのですが、PHPの公式リポジトリとして扱われています。これは2025年5月、PHPを支援する非営利組織 The PHP Foundationからの公式サポートが公表され、今日ではPHP実行環境の有力な選択肢の1つとして、注目されています。@<br>{}出典: https://thephp.foundation/blog/2025/05/15/frankenphp/
 
 == PHP実行環境の変遷とFrankenPHPのアプローチ
 
@@ -10,57 +10,61 @@ FrankenPHPが2024年に安定版をリリースするまでの間、PHP実行環
 
 === @<tt>{Apache + mod_php}
 
+PHPでWebアプリケーションを作成するにあたり、初期に広く使われたのがこの @<tt>{Apache + mod_php} です。この構成では、WebサーバーであるApacheのプロセス内でPHPを直接実行します。構成が分かりやすく導入しやすい一方で、アクセス増加時のリソース効率や運用の柔軟性に課題が出るケースがありました。特に同時接続数が増える状況では、いわゆるC10k問題（1万接続規模での性能・資源効率の課題）が注目され、接続ごとにプロセスが立ち上がって、処理リソースを消費しやすいこの構成は不利になりがちでした。
+
 //image[arch-apache-mod-php][Apache + mod_php のアーキテクチャ]{
 //}
 
-PHPでWebアプリケーションを作成するにあたり、初期に広く使われたのがこの @<tt>{Apache + mod_php} です。この構成では、WebサーバーであるApacheのプロセス内でPHPを直接実行します。構成が分かりやすく導入しやすい一方で、アクセス増加時のリソース効率や運用の柔軟性に課題が出るケースがありました。特に同時接続数が増える状況では、いわゆるC10k問題（1万接続規模での性能・資源効率の課題）が注目され、接続ごとにプロセスが立ち上がって、処理リソースを消費しやすいこの構成は不利になりがちでした。この背景から、より少ないリソースで、より多くの同時接続をさばきやすいアーキテクチャが求められるようになりました。
+この背景から、より少ないリソースで、より多くの同時接続をさばきやすいアーキテクチャが求められるようになりました。
 
 === @<tt>{Nginx + PHP-FPM}
+
+@<tt>{Apache + mod_php} の課題に対応する形で普及したのが @<tt>{Nginx + PHP-FPM} です。Webサーバーである @<tt>{Nginx} と、PHPの実行基盤である @<tt>{PHP-FPM} を分離し、両者をFastCGIで接続する方式を取りました。この分離によって、同時接続への対応やプロセス管理の柔軟性が高まり、実運用での扱いやすさが向上しました。
 
 //image[arch-nginx-php-fpm][Nginx + PHP-FPM のアーキテクチャ]{
 //}
 
-@<tt>{Apache + mod_php} の課題に対応する形で普及したのが @<tt>{Nginx + PHP-FPM} です。Webサーバーである @<tt>{Nginx} と、PHPの実行基盤である @<tt>{PHP-FPM} を分離し、両者をFastCGIで接続する方式を取りました。この分離によって、同時接続への対応やプロセス管理の柔軟性が高まり、実運用での扱いやすさが向上しました。
+==== 発生した運用課題
 
-=== 発生した課題
-
-アプリケーションの規模拡大と運用の高度化が進んだことで、状況が変わってきました。Webサーバーと実行基盤を切り分けていたことで、サーバーの管理コストが増加してきました。その背景には、コンテナ運用やオートスケールが一般化し、構成要素が増えやすい環境になってきたことが挙げられます。WebサーバーとPHP実行環境の、2台ともの設定管理や障害切り分けの負担が大きくなってきたのです。その結果、@<tt>{Nginx + PHP-FPM} は依然として有力な構成である一方、FastCGIを挟む構造に由来する複雑さや運用コストを見直す動きも強まっていきました。
+アプリケーションの規模拡大と運用の高度化が進んだことで、状況が変わってきました。Webサーバーと実行基盤を切り分けていたことで、サーバーの管理コストが増加してきたのです。コンテナ運用やオートスケールが一般化し、性能を上げる垂直よりも、台数を増やす水平方向の拡張がメインになり、構成要素が増えやすい環境になってきたことが挙げられます。その結果、@<tt>{Nginx + PHP-FPM} は依然として有力な構成である一方、FastCGIを挟む構造に由来する複雑さや運用コストを見直す動きも強まっていきました。
 
 === @<tt>{FrankenPHP} のアプローチ
 
 //image[arch-frankenphp][FrankenPHP のアーキテクチャ]{
 //}
 
-FrankenPHPは、@<tt>{Nginx + PHP-FPM} で得られた運用上の知見を踏まえつつ、Webサーバーと実行環境を1つにまとめ、@<tt>{Apache + mod_php} のようなWebサーバー一体型のアプローチを取りました。これにより、FastCGIを介したプロセス間通信が生む複雑さやオーバーヘッドを減らす方向で設計されています。また @<tt>{Apache + mod_php} が課題とした、同時接続時のリソース効率や運用の柔軟性に関して、並列処理に強いGoで開発されたWebサーバー、Caddyを軸にすることで課題を解決しています。このように @<tt>{Apache + mod_php} のメリットであった統合型のシンプルさと、近年の運用で重視される実用性を両立させようとするのが、FrankenPHPの立ち位置です。
+FrankenPHPは、@<tt>{Nginx + PHP-FPM} で得られた運用上の知見を踏まえつつ、Webサーバーと実行環境を1つにまとめ、@<tt>{Apache + mod_php} のようなWebサーバー一体型のアプローチを取りました。これにより、FastCGIを介したプロセス間通信が生む複雑さやオーバーヘッドを減らす方向で設計されています。また @<tt>{Apache + mod_php} が課題とした、同時接続時のリソース効率や運用の柔軟性に関して、並列処理に強いGoで開発されたWebサーバー、Caddyを軸にすることで、その課題を解決しています。このように @<tt>{Apache + mod_php} のメリットであった統合型のシンプルさと、近年の運用で重視される実用性を両立させようとするのが、FrankenPHPの立ち位置です。
 
 == FrankenPHPはどんな場面で選びやすいか
 
-FrankenPHPの持つ特性はすべての現場に適合するわけではありませんが、その特性を踏まえると、以下のような場面で選択肢として浮かびやすくなります。
+FrankenPHPの持つ特性を踏まえて、どのような場面で特に威力を発揮するのか、見ていきましょう。
 
 @<b>{インフラ構成をシンプルに保ちたい} WebサーバーとPHP実行環境を1つのプロセスにまとめられるため、@<tt>{Nginx}で1台、@<tt>{PHP-FPM}で1台のような、2層構成と比べるとコンテナの管理が簡潔になります。特に小規模なプロダクトや個人開発など、インフラの管理コストを抑えたい場面に向いています。
 
-@<b>{Workerモードによるパフォーマンス改善を狙う} FrankenPHPのWorkerモードを使うと、アプリケーションの初期化プロセスを起動時に一度だけ行い、リクエスト間で再利用しやすくなります。Laravelなどのフレームワークは便利な反面、起動時に設定ファイルなど多くの処理を読み込むため、起動コストが発生します。PHP-FPM構成ではリクエストごとに起動コストが発生しますが、FrankenPHPではこのコストを削減できるので、全体的なスループット向上が見込める可能性があります。
+@<b>{Workerモードによるパフォーマンス改善を狙う} Workerモードを使うと、アプリケーションの初期化プロセスを起動時に一度だけ行い、リクエスト間で再利用しやすくなります。Symphony、Laravelなどのフレームワークは便利な反面、起動時に設定ファイルなど多くの処理を読み込むため、起動コストが発生します。PHP-FPM構成ではリクエストごとに起動コストが発生しますが、FrankenPHPではこのコストを削減できるので、全体的なスループット向上が見込めます。
 
-@<b>{SSEや103 Early Hintsを活用したい場合} FrankenPHPはMercureプロトコルを介したServer-Sent Events（SSE）や、HTTP 103 Early Hintsをサーバーレベルでネイティブにサポートしています。リアルタイム通知やパフォーマンス最適化を追加モジュールや新規ライブラリのインストールなく行えるため、これらの課題を検討している場面で有効です。
+@<b>{SSEや103 Early Hintsを活用したい場合} Mercureプロトコルを介したServer-Sent Events（SSE）や、HTTP 103 Early Hintsをネイティブでサポートしています。リアルタイム通知やパフォーマンス最適化を追加モジュールや新規ライブラリのインストールなく行えるため、これらの課題を検討している場面で有効です。
 
 == 他の選択肢との比較
 
 PHPのモダンな実行環境として、FrankenPHPのほかに @<b>{Swoole} や @<b>{RoadRunner} があります。それぞれの特徴を簡単に整理します。
 
 //table{
-項目	@<dtp>{table align=center}Apache+mod_php	@<dtp>{table align=center}Nginx+PHP-FPM	@<dtp>{table align=center}Swoole	@<dtp>{table align=center}FrankenPHP
+項目	@<dtp>{table align=center}mod_php	@<dtp>{table align=center}PHP-FPM	@<dtp>{table align=center}Swoole	@<dtp>{table align=center}RR	@<dtp>{table align=center}FrankenPHP
 --------------
-Webサーバー内包	@<dtp>{table align=center}○	@<dtp>{table align=center}×	@<dtp>{table align=center}×	@<dtp>{table align=center}○
-Workerモード	@<dtp>{table align=center}×	@<dtp>{table align=center}×	@<dtp>{table align=center}○	@<dtp>{table align=center}○
-既存コードへの影響	@<dtp>{table align=center}低	@<dtp>{table align=center}低	@<dtp>{table align=center}高	@<dtp>{table align=center}低
-Laravel Octane対応	@<dtp>{table align=center}×	@<dtp>{table align=center}×	@<dtp>{table align=center}○	@<dtp>{table align=center}○
+Webサーバー内包	@<dtp>{table align=center}○	@<dtp>{table align=center}×	@<dtp>{table align=center}×	@<dtp>{table align=center}×	@<dtp>{table align=center}○
+Workerモード	@<dtp>{table align=center}×	@<dtp>{table align=center}×	@<dtp>{table align=center}○	@<dtp>{table align=center}○	@<dtp>{table align=center}○
+既存コードへの影響	@<dtp>{table align=center}低	@<dtp>{table align=center}低	@<dtp>{table align=center}高	@<dtp>{table align=center}低	@<dtp>{table align=center}低
+Laravel Octane対応	@<dtp>{table align=center}×	@<dtp>{table align=center}×	@<dtp>{table align=center}○	@<dtp>{table align=center}○	@<dtp>{table align=center}○
 //}
+
+※ mod_php: Apache+mod_php、PHP-FPM: Nginx+PHP-FPM、RR: RoadRunner
 
 @<b>{Nginx + PHP-FPM}現時点でも最も広く使われているスタンダードな構成です。運用実績・ドキュメント・コミュニティの充実度は随一で、既存の運用ノウハウをそのまま活かしやすいです。ただし、WebサーバーとPHP実行環境を別プロセスで管理する必要があり、構成が複雑になりやすい側面があります。
 
 @<b>{Swoole} PHP拡張として動作し、コルーチンや非同期I/Oを言語レベルで扱えるのが特徴です。高い同時接続性能が求められる場面では有力な選択肢ですが、PHPのコード作法に影響を与えるため、既存アプリの移行には注意が必要です。Laravelとの組み合わせには @<tt>{Laravel Octane} 経由で利用できます。
 
-@<b>{RoadRunner} Go製のアプリケーションサーバーで、PHP-FPMを置き換えるように動作します。Workerプロセスを常駐させてリクエストを処理する点はFrankenPHPのWorkerモードと思想が近く、Laravel OctaneからもRoadRunnerを選択できます。FrankenPHPとの大きな違いは、WebサーバーとしてのCaddyを内包していない点です。別途リバースプロキシを立てる必要があります。
+@<b>{RoadRunner} Go製のアプリケーションサーバーで、PHP-FPMを置き換えるように動作します。Workerプロセスを常駐させてリクエストを処理する点はFrankenPHPのWorkerモードと思想が近く、Laravel OctaneからもRoadRunnerを選択できます。NginxやApacheなどWebサーバーアプリケーションと組み合わせて使われることが多いです。
 
 @<b>{FrankenPHP}上記に対して、FrankenPHPは、WebサーバーとPHP実行環境の一体化、CaddyによるHTTP/2・HTTP/3・自動TLSへのネイティブ対応、Mercure統合によるSSEサポートを組み合わせている点が独自の強みで、シンプルよりもイージー寄りな構成になっています。Laravelとの組み合わせでは、Laravel Octaneの公式ドライバとしても採用されており、既存のLaravel開発者が試しやすい環境が整っています。
 
@@ -68,4 +72,4 @@ Laravel Octane対応	@<dtp>{table align=center}×	@<dtp>{table align=center}×	@
 
 この章では、既存の実行環境の歴史と、なぜFrankenPHPが生まれたのかを説明しました。
 
-次の章からは、FrankenPHP + Laravelの開発環境を立ち上げながら、FrankenPHPの大きな特徴であるWorkerモードを見ていきます。
+次の章では、FrankenPHP + Laravelの開発環境を構築します。その次の章で、FrankenPHPの大きな特徴であるWorkerモードと、Laravelでそれを活用するためのOctaneについて説明します。
