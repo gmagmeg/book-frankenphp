@@ -60,11 +60,11 @@ Laravel Octane対応	@<dtp>{table align=center}×	@<dtp>{table align=center}×	@
 
 ※ mod_php: Apache+mod_php、PHP-FPM: Nginx+PHP-FPM、RR: RoadRunner
 
-@<b>{Nginx + PHP-FPM}現時点でも最も広く使われているスタンダードな構成です。運用実績・ドキュメント・コミュニティの充実度は随一で、既存の運用ノウハウをそのまま活かしやすいです。ただし、WebサーバーとPHP実行環境を別プロセスで管理する必要があり、構成が複雑になりやすい側面があります。
+@<b>{Apach＋mod_php, Nginx + PHP-FPM}前述の通りなので、ここでは省きます。
 
-@<b>{Swoole} PHP拡張として動作し、コルーチンや非同期I/Oを言語レベルで扱えるのが特徴です。高い同時接続性能が求められる場面では有力な選択肢ですが、PHPのコード作法に影響を与えるため、既存アプリの移行には注意が必要です。Laravelとの組み合わせには @<tt>{Laravel Octane} 経由で利用できます。
+@<b>{Swoole} PHP拡張として動作し、コルーチンや非同期I/Oを言語レベルで扱えるのが特徴です。高い同時接続性能が求められる場面では有力な選択肢ですが、PHPのコード作法に影響を与えるため、既存アプリの移行には注意が必要です。Laravelの拡張パッケージ、 @<tt>{Laravel Octane} とは特に相性がいいです。
 
-@<b>{RoadRunner} Go製のアプリケーションサーバーで、PHP-FPMを置き換えるように動作します。Workerプロセスを常駐させてリクエストを処理する点はFrankenPHPのWorkerモードと思想が近く、Laravel OctaneからもRoadRunnerを選択できます。NginxやApacheなどWebサーバーアプリケーションと組み合わせて使われることが多いです。
+@<b>{RoadRunner} Go製のアプリケーションサーバーで、PHP-FPMを置き換えるように動作します。Workerプロセスを常駐させてリクエストを処理する点はFrankenPHPのWorkerモードと思想が近く、@<tt>{Laravel Octane}からも@<tt>{RoadRunner}を選択できます。@<tt>{Nginx}や@<tt>{Apache}などWebサーバーアプリケーションと組み合わせて使われることが多いです。
 
 @<b>{FrankenPHP}上記に対して、FrankenPHPは、WebサーバーとPHP実行環境の一体化、CaddyによるHTTP/2・HTTP/3・自動TLSへのネイティブ対応、Mercure統合によるSSEサポートを組み合わせている点が独自の強みで、シンプルよりもイージー寄りな構成になっています。Laravelとの組み合わせでは、Laravel Octaneの公式ドライバとしても採用されており、既存のLaravel開発者が試しやすい環境が整っています。
 
