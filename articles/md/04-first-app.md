@@ -10,11 +10,11 @@
  3. **リアルタイム通知**: 生成完了後、ユーザーにワンタイムパスワード付きのプッシュ通知を送信します。
  4. **セキュアなダウンロード**: ユーザーは通知されたパスワードで認証を行い、ファイルをダウンロードします。
 
-1.と2.はFrankenPHP固有の機能と直接関係しないため、ソースコードの紹介にとどめて簡潔に扱います。
-
 ![メッセージ発行画面](images/hakkou.png)  
 
 ![メッセージ受信画面](images/zyushin.png)
+
+1.と2.はFrankenPHP固有の機能と直接関係しないため、ソースコードの紹介にとどめて簡潔に扱います。
 
 ## 作成物の概要
 この章では、次の2つの画面を用意します。
@@ -27,7 +27,7 @@ https://github.com/gmagmeg/book-frankenphp-docker/blob/main/app/Http/Controllers
 
 
 ### Mercure Hubでメッセージをプッシュする
-メッセージをプッシュするために、FrankenPHPに組み込まれている `Mercure Hub` を利用します。まずは、有効化のために `.env` ファイルを編集します。
+メッセージをプッシュするために、FrankenPHPに組み込まれている `Mercure Hub` を利用します。まずは `.env` ファイルを編集し、有効化しましょう。
 なお、各キーは開発を想定して平易な値を使用していますが、本番運用時はセキュアな文字列に置き換えてください。
 
 * 紙面の都合上、改行を入れていますが、実際に記載するときは１行に繋げてください
@@ -54,13 +54,11 @@ frankenphp_mercure_local_dev_20260302
 $result = mercure_publish($topic, $payload, $options);
 ```
 
-この呼び出しだけでメッセージをプッシュできます。`Node.js` などのサーバーサイド `JavaScript` を別途用意する必要がありません。これほど簡単に済むのは、FrankenPHPにSSE（Server-Sent Events）でメッセージを配信する `Mercure Hub` が標準で組み込まれているためです。そのため、アプリケーション側では `mercure_publish()` を呼び出すだけで配信処理を実装できます。
+この呼び出しだけでメッセージをプッシュできます。`Node.js` などのサーバーサイド `JavaScript` を別途用意する必要がありません。こんなに簡単に済むのは、FrankenPHPにSSE（Server-Sent Events）でメッセージを配信するための `Mercure Hub` が標準で組み込まれているためです。この機構のおかげで、アプリケーション側では `mercure_publish()` を呼び出すだけで配信処理を実装できます。
 
 #### OTP（ワンタイムパスワード）の生成
 
-送信するペイロードには、ダウンロード認証用のOTPを含めます。OTPには `lcobucci/jwt` で生成したJWTを採用します。JWTは署名済みのトークンで、有効期限やダウンロード対象ファイル名などを埋め込めます。これにより、受け取ったユーザーだけが使用できる短命な認証情報として機能します。
-
-FrankenPHPの公式ドキュメントでも `symfony/mercure` と `lcobucci/jwt` の組み合わせが紹介されており、本書でもこれに沿って実装します。まずパッケージをインストールします。
+送信するペイロードには、ダウンロード認証用のOTPを含めます。OTPにはFraneknPHP公式でも推奨されている `lcobucci/jwt` を採用します。JWTは署名済みのトークンで、有効期限やダウンロード対象ファイル名などを埋め込めます。これにより、受け取ったユーザーだけが使用できる短命な認証情報として機能します。
 
 ```bash
 composer require symfony/mercure lcobucci/jwt
@@ -95,8 +93,6 @@ $payload = json_encode([
 ]);
 $result = mercure_publish($topic, $payload);
 ```
-
-このOTPは `lcobucci/jwt` が持つJWT標準の有効期限・署名検証の仕組みを活用しており、有効期限切れや改ざんされたトークンは次章のダウンロード処理で自動的に弾かれます。
 
 ### Mercure Hubからのメッセージを受信する
 今回利用するソースコードはこちらです。
