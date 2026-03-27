@@ -42,12 +42,20 @@ docker compose exec app php artisan key:generate --force
 docker compose exec app php artisan migrate --force
 ```
 
-起動後、次のコマンドで動作確認します。
+コンテナを起動後、Caddyが作成した証明書をローカルにコピーします。こうすることで、ブラウザからアクセスしたときにセキュリティ関連の警告が消えます。
+```bash
+sudo security add-trusted-cert -d -r \
+trustRoot -k /Library/Keychains/System.keychain \
+/tmp/caddy-local-root.crt 
+```
+
+ブラウザにアクセスすれば、Laravelの初期画面が映るはずです。
 
 ```bash
-docker compose ps
-curl -ik https://localhost:8100
+https://localhost:8100/
 ```
+
+![Laravel 起動画面](images/laravel-init-img.png){scale=0.5}
 
 本書の環境では SSE を利用するにあたり、開発環境でも `tls internal` を設定し、 **HTTPS** で動作するようになっています。。そのため `curl` には自己署名証明書を許容する `-k` オプションが必要です。ブラウザでアクセスする場合も、自己署名証明書に関するセキュリティ警告が表示されますので、ご注意ください。
 

@@ -40,7 +40,7 @@ php artisan octane:frankenphp \
   --workers=4
 ```
 
-![classic mode と Workerモードのリクエスト処理フロー](images/exec-mode-flow.png)
+![classic mode と Workerモードのリクエスト処理フロー](images/exec-mode-flow.svg)
 
 
 ## Octaneの役割

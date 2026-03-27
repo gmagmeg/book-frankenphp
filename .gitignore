@@ -12,3 +12,6 @@ articles/*.txt
 articles/ReVIEW-Template-text/*
 articles/*.re
 articles/_refiles/*.re
+.bundle
+.bundle_home
+vendor
