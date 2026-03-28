@@ -21,7 +21,7 @@
 - データベース: PostgreSQL
 - 公開ポート: `8100`
 
-Laravel で FrankenPHP の能力を最大限に発揮するために、Octane 経由で Workerモードを利用して起動します。Octane と Workerモードについては次の章で詳しく説明しますので、この章では省かせていただきます。また本書のコンテナでは、`start-container.sh` から次のように起動します。
+Laravel で FrankenPHP の能力を最大限に発揮するために、Octane 経由で Workerモードを利用して起動します。Octane と Workerモードについては次の章で詳しく説明しますので、この章では省きます。また本書のコンテナでは、`start-container.sh` から次のように起動します。
 
 ```bash
 php artisan octane:frankenphp \
@@ -42,14 +42,23 @@ docker compose exec app php artisan key:generate --force
 docker compose exec app php artisan migrate --force
 ```
 
-コンテナを起動後、Caddyが作成した証明書をローカルにコピーします。こうすることで、ブラウザからアクセスしたときにセキュリティ関連の警告が消えます。
+コンテナを起動後、Caddyが作成した自己署名ルート証明書をOSに信頼済みとして登録します。こうすることで、ブラウザからアクセスしたときにセキュリティ関連の警告が消えます。
+
+**macOSの場合**
 ```bash
 sudo security add-trusted-cert -d -r \
 trustRoot -k /Library/Keychains/System.keychain \
-/tmp/caddy-local-root.crt 
+/tmp/caddy-local-root.crt
 ```
 
-ブラウザにアクセスすれば、Laravelの初期画面が映るはずです。
+**Linux（Ubuntu/Debian）の場合**
+```bash
+sudo cp /tmp/caddy-local-root.crt \
+/usr/local/share/ca-certificates/caddy-local-root.crt
+sudo update-ca-certificates
+```
+
+ブラウザでアクセスすれば、Laravelの初期画面が映るはずです。
 
 ```bash
 https://localhost:8100/
@@ -57,7 +66,7 @@ https://localhost:8100/
 
 ![Laravel 起動画面](images/laravel-init-img.png){scale=0.5}
 
-本書の環境では SSE を利用するにあたり、開発環境でも `tls internal` を設定し、 **HTTPS** で動作するようになっています。。そのため `curl` には自己署名証明書を許容する `-k` オプションが必要です。ブラウザでアクセスする場合も、自己署名証明書に関するセキュリティ警告が表示されますので、ご注意ください。
+本書の環境では SSE を利用するにあたり、開発環境でも `tls internal` を設定し、 **HTTPS** で動作するようになっています。そのため `curl` には自己署名証明書を許容する `-k` オプションが必要です。ブラウザでアクセスする場合も、自己署名証明書に関するセキュリティ警告が表示されますので、ご注意ください。
 
 ## ここまでの確認ポイント
 この時点で、次を満たしていれば本章の開発準備は完了です。

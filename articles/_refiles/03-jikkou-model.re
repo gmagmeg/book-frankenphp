@@ -22,13 +22,13 @@ FrankenPHPには、大きく分けて classic mode と Workerモードの2つが
 
 === classic mode
 
-Workerモードの設定をしない場合、FrankenPHPは classic mode で動作します。このモードは従来のPHP実行環境に近い使い方ができるモードで、リクエストごとにPHPファイルを直接実行する形式をとります。内部的にスレッドプールを用いてリクエストを処理することはWorkerモードと共通しており、単純にシングルスレッドで動くわけではありません（筆者はここの棲み分けで随分悩みました）。その性質上、Laravelのようなフレームワークではこの初期化コストが性能に影響してきます。
+Workerモードの設定をしない場合、FrankenPHPは classic mode で動作します。このモードは従来のPHP実行環境に近い使い方ができるモードで、リクエストごとにPHPファイルを直接実行する形式をとります。その性質上、Laravelのようなフレームワークではこの初期化コストが性能に影響してきます。
 
 === Workerモード
 
 Workerモードは、アプリケーションを一度起動し、その状態をメモリに保持したままリクエストを処理するモードです。毎回アプリケーションを起動し直さずに済むため、DIコンテナやテンプレートエンジンなどのフレームワーク初期化コストを削減できます。
 
-なお、FrankenPHPは classic mode でも Workerモードでも内部ではスレッドを使ってリクエストを処理します。Workerモードの利点はマルチスレッドであること自体よりも、初期化コストを繰り返さずに済む点にあります。@<br>{}本書ではWorkerモードで起動させるために、次のようなコマンドを使っています。
+Workerモードの利点はマルチスレッドであること自体よりも、初期化コストを繰り返さずに済む点にあります。本書ではWorkerモードで起動させるために、次のようなコマンドを使っています。
 
 //emlist[][bash]{
 php artisan octane:frankenphp \
@@ -53,11 +53,6 @@ php artisan octane:install --server=frankenphp
 
 //emlist[][php]{
 <?php
-
-use Laravel\Octane\FrankenPhp\FrankenPhpClient;
-use Laravel\Octane\FrankenPhp\ServerStateFile;
-use Laravel\Octane\Worker;
-
 // アプリケーションを一度だけ起動し、$app に保持する
 $app = require __DIR__.'/../bootstrap/app.php';
 

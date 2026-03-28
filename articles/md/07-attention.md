@@ -41,7 +41,7 @@ class SomeService
 
 
 ## 非対応の拡張機能
-FrankenPHPはPHPの「スレッドセーフ（ZTS: Zen Thread Safety）」モードを利用して動作します。そのため、スレッドセーフに対応していない一部のPHP拡張機能は利用できません。
+FrankenPHPはPHPの「スレッドセーフ（ZTS: Zend Thread Safety）」モードを利用して動作します。そのため、スレッドセーフに対応していない一部のPHP拡張機能は利用できません。
 
 *   **imap系の関数**: スレッドセーフではないため、FrankenPHPでは動作しません。
 *   **newrelic**: 公式のPHPエージェントがスレッドセーフに対応していないため、現時点では利用できません。

@@ -5,14 +5,14 @@
 ## 103 Early Hintsとは
 
 HTTP 103 Early Hints は、サーバーが最終レスポンスを返す前に、ブラウザへ予備のHTTPヘッダーを送信できる仕組みです。ブラウザはこの情報をもとに、CSSやJavaScriptなどのリソースを事前に読み込み始めて最終的なHTMLが届く前から、表示に必要な準備を先回りして進められるようになり、ページの表示速度を向上させられます。
-![103 Early Hints のリクエスト処理フロー比較](images/early-hints-flow.svg)
+![103 Early Hints のリクエスト処理フロー比較](images/early-hints-flow.png)
 
 便利そうな機能ですが、どのように利用できるのでしょうか。FrankenPHPでは、この機能を比較的少ない手順で試せます。この節では、そのための準備を進めていきます。
 
 ## HTTP/2、SSLの設定
 
-103 Early Hints は予備のHTTPヘッダーを並列に送る仕組みであるため、HTTPSかつHTTP/2であることが前提です。この環境を整えるには本来であればWebサーバーアプリケーション側にいろいろと設定が必要なのですが、FrankenPHP（Caddy）はHTTPS証明書の自動生成に対応しており、フラグを1つ追加するだけで有効化できます。2章ですでにこのオプションは加えて起動しているので、証明書の生成とHTTPSの有効化は済んでいます。
-`php artisan octane:frankenphp` の起動コマンドに `--https` フラグを追加します。
+103 Early Hints は最終レスポンスに先立って予備のHTTPヘッダーを送る仕組みであるため、HTTPSかつHTTP/2であることが前提です。HTTP/2では1つのTCP接続上で複数のストリームを多重化できるため、最終レスポンスの送信を待たずに予備ヘッダーを別ストリームで先行して届けられます。この環境を整えるには本来であればWebサーバーアプリケーション側にいろいろと設定が必要なのですが、FrankenPHP（Caddy）はHTTPS証明書の自動生成に対応しており、フラグを1つ追加するだけで有効化できます。2章ですでにこのオプションは加えて起動しているので、証明書の生成とHTTPSの有効化は済んでいます。
+確認として、起動コマンドは次のようになっています。
 
 ```bash
 php artisan octane:frankenphp --https --watch
@@ -46,18 +46,40 @@ func buildEnv(r *http.Request, fc *FrankenPHPContext) (map[string]string, error)
 
 ## アプリケーションコードの設定
 
-下準備ができたので、アプリケーションにコードを差し込みます。といっても、書くコードは少なく、これだけで済みます。
+下準備ができたので、アプリケーションにコードを差し込みます。`headers_send(103)` はFrankenPHPが提供する独自関数で、PHP標準には存在しません。この関数を呼び出すことで、最終レスポンスを返す前に103 Early Hintsをブラウザへ送信できます。
+
+### preconnectとpreloadの使い分け
+
+Early Hintsで指定できるリソースヒントには、主に `preconnect` と `preload` の2種類があります。
+
+- **`preconnect`**: 指定したオリジンへのTCP接続・TLSハンドシェイクを事前に行います。外部サービスとの接続で効果的です。
+- **`preload`**: 指定したリソースのダウンロードを事前に開始します。CSSやJavaScriptなど、ページ表示に必要なアセットに有効です。
+
+本書のアプリケーションでは、Mercure Hubへの事前接続と、アセットの事前読み込みを組み合わせて使います。
+
 ```php
-    // FrankenPHP の HTTP 103 Early Hints でMercureハブへの接続を事前通知する。
-    header('Link: </.well-known/mercure>; rel=preconnect');
-    headers_send(103);
+// Mercure Hubへの事前接続（外部エンドポイントとのコネクション確立）
+header('Link: </.well-known/mercure>; rel=preconnect');
+// CSSの事前読み込み
+header('Link: </build/app.css>; rel=preload; as=style', false);
+// JSの事前読み込み
+header('Link: </build/app.js>; rel=preload; as=script', false);
+headers_send(103);
 ```
 
-コードを差し込んだ後は、103 Early Hints が実際に送信されているか確認しましょう。開発者ツールのネットワークタブに Early Hints Header が増えていることを確認できるはずです。
+`header()` の第2引数に `false` を渡すことで、前のLinkヘッダーを上書きせずに複数のヒントを追加できます。
+
+### 動作確認
+
+コードを差し込んだ後は、103 Early Hints が実際に送信されているか確認しましょう。ブラウザの開発者ツールを開き、Networkタブで対象のリクエストを選択してください。Headersの中に `103 Early Hints` のセクションが表示され、指定した `Link` ヘッダーが含まれていれば正しく動作しています。
 
 ![Early Hints Headerあり](images/early-hints-headers.png)
 
+Early Hintsを設定していない場合は、このセクションが表示されません。
+
 ![Early Hints Headerなし](images/early-hints-no.png)
+
+さらにTimingタブを確認すると、Early Hintsありの場合はリソースの読み込み開始タイミングが早まっていることがわかります。CSSやJSの取得がHTMLの受信完了を待たずに始まるため、ページの表示速度の改善につながります。
 
 
 ## この章のまとめ
