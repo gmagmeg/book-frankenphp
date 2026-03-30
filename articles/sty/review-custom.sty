@@ -1,1 +1,14 @@
 % for user-defined macro
+
+% コードブロック前の余白を縮小
+\renewenvironment{reviewemlist}{%
+  \smallskip\footnotesize\begin{shaded}\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\setlength{\baselineskip}{1.2zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}}
+
+\renewenvironment{reviewlist}{%
+  \smallskip\footnotesize\begin{shaded}\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\setlength{\baselineskip}{1.2zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
+
+\renewenvironment{reviewcmd}{%
+  \color{white}\smallskip\footnotesize\begin{shadedb}\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\setlength{\baselineskip}{1.2zw}\begin{alltt}}{%
+  \end{alltt}\end{shadedb}}

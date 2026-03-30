@@ -9,11 +9,11 @@
 
 完成イメージは次のとおりです。
 
-https://localhost:8100/mercure/sse-demo
-![メッセージ発行画面](images/hakkou.png)  
+![メッセージ発行画面](images/hakkou.png){width=120%}  
+![メッセージ受信画面](images/zyushin.png)  
 
-https://localhost:8100/mercure/csv-download
-![メッセージ受信画面](images/zyushin.png)
+- `https://localhost:8100/mercure/sse-demo`  
+- `https://localhost:8100/mercure/csv-download`
 
 1.と2.はFrankenPHP固有の機能と直接関係しないため、ソースコードの紹介にとどめて簡潔に扱います。
 

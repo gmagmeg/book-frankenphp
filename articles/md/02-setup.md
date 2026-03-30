@@ -44,15 +44,15 @@ docker compose exec app php artisan migrate --force
 
 コンテナを起動後、Caddyが作成した自己署名ルート証明書をOSに信頼済みとして登録します。こうすることで、ブラウザからアクセスしたときにセキュリティ関連の警告が消えます。
 
-**macOSの場合**
 ```bash
+# macOSの場合
 sudo security add-trusted-cert -d -r \
 trustRoot -k /Library/Keychains/System.keychain \
 /tmp/caddy-local-root.crt
 ```
 
-**Linux（Ubuntu/Debian）の場合**
 ```bash
+# Linux（Ubuntu/Debian）の場合
 sudo cp /tmp/caddy-local-root.crt \
 /usr/local/share/ca-certificates/caddy-local-root.crt
 sudo update-ca-certificates

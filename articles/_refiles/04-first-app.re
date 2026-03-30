@@ -1,17 +1,18 @@
 = メッセージ通知アプリの作成
 
-3章で下準備が完了したので、ここからはアプリケーション開発を通してFrankenPHPの組み込み機能を学んでいきましょう。次の要件を満たすアプリケーションを作成していきます。
+前章までで下準備が完了したので、ここからはアプリケーション開発を通してFrankenPHPの組み込み機能を学んでいきましょう。次の要件を満たすアプリケーションを作成していきます。
 
  1. @<b>{CSV生成リクエスト}: ユーザーはCSVの生成をリクエストする。
  2. @<b>{バックグラウンド処理}: リクエストを受けると、非同期でCSVの生成を開始します。
- 3. @<b>{リアルタイム通知}: 生成完了後、ユーザーにワンタイムパスワード付きのプッシュ通知を送信します。
+ 3. @<b>{リアルタイム通知}: 生成完了後、ユーザーにダウンロードトークン付きのプッシュ通知を送信します。
  4. @<b>{セキュアなダウンロード}: ユーザーは通知されたパスワードで認証を行い、ファイルをダウンロードします。
 
-//image[hakkou][メッセージ発行画面]{
-//}
+完成イメージは次のとおりです。
 
-//image[zyushin][メッセージ受信画面]{
-//}
+@<icon>{hakkou}@<br>{}@<icon>{zyushin}
+
+ * @<tt>{https://localhost:8100/mercure/sse-demo}
+ * @<tt>{https://localhost:8100/mercure/csv-download}
 
 1.と2.はFrankenPHP固有の機能と直接関係しないため、ソースコードの紹介にとどめて簡潔に扱います。
 
@@ -52,15 +53,15 @@ $result = mercure_publish($topic, $payload, $options);
 
 @<tt>{mercure_publish()} を呼び出すだけでブラウザへメッセージをプッシュでき、@<tt>{Node.js} などのサーバーサイド @<tt>{JavaScript} を別途用意する必要がありません。こんなに簡単に済むのは、FrankenPHPに @<tt>{SSE（Server-Sent Events）} でメッセージを配信するための @<tt>{Mercure Hub} が標準で組み込まれているためです。
 
-==== OTP（ワンタイムパスワード）の生成
+==== ダウンロードトークンの生成
 
-送信するペイロードには、ダウンロード認証用のOTPを含めます。OTPにはFraneknPHP公式でも推奨されている @<tt>{lcobucci/jwt} を採用します。JWTは署名済みのトークンで、有効期限やダウンロード対象ファイル名などを埋め込めます。これにより、受け取ったユーザーだけが使用できる短命な認証情報として機能します。
+送信するペイロードには、ダウンロード認証用のトークンを含めます。トークンの生成にはJWTライブラリの @<tt>{lcobucci/jwt} を採用します。このライブラリはMercureの認証トークン生成でも公式に推奨されているものです。JWTは署名済みのトークンで、有効期限やダウンロード対象ファイル名などを埋め込めます。これにより、受け取ったユーザーだけが使用できる有効期限付きの使い捨て認証情報として機能します。
 
 //emlist[][bash]{
 composer require symfony/mercure lcobucci/jwt
 //}
 
-次のコードでOTPを生成し、ペイロードに含めます。
+次のコードでダウンロードトークンを生成し、ペイロードに含めます。
 
 //emlist[][php]{
 use Lcobucci\JWT\Configuration;
@@ -73,7 +74,7 @@ $jwtConfig = Configuration::forSymmetricSigner(
     InMemory::plainText(config('services.jwt.secret'))
 );
 
-// 有効期限10分・ダウンロード対象ファイル名を埋め込んだOTPを生成する
+// 有効期限10分・ダウンロード対象ファイル名を埋め込んだダウンロードトークンを生成する
 $otp = $jwtConfig->builder()
     ->issuedAt(new \DateTimeImmutable())
     ->expiresAt(new \DateTimeImmutable('+10 minutes'))
@@ -81,7 +82,7 @@ $otp = $jwtConfig->builder()
     ->getToken($jwtConfig->signer(), $jwtConfig->signingKey())
     ->toString();
 
-// OTPをMercureのペイロードに含めて送信する
+// ダウンロードトークンをMercureのペイロードに含めて送信する
 $payload = json_encode([
     'message' => 'CSVの生成が完了しました',
     'otp'     => $otp,
@@ -105,7 +106,7 @@ const subscribeUrl = `/.well-known/mercure?topic=${encodeURIComponent(topic)}`;
 const eventSource = new EventSource(subscribeUrl);
 eventSource.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  // 受信したOTPとファイル名を画面に表示する
+  // 受信したダウンロードトークンとファイル名を画面に表示する
   document.getElementById('otp-display').textContent = data.otp;
   document.getElementById('filename-display').textContent = data.file;
   document.getElementById('download-area').classList.remove('hidden');
@@ -115,20 +116,20 @@ eventSource.onerror = () => {
 };
 //}
 
-ユーザーは画面に表示されたOTPをコピーし、ダウンロードフォームに入力します。OTPの検証とファイル配信については次章で説明します。
+ユーザーは画面に表示されたダウンロードトークンをコピーし、ダウンロードフォームに入力します。トークンの検証とファイル配信については6章で説明します。
 
 === バックグラウンドでのCSV生成
 
 ここはFrankenPHP固有の機能と直接関係しないため、実装の詳細はソースコードを参照してください。https://github.com/gmagmeg/book-frankenphp-docker/blob/main/app/Jobs/GenerateCsvJob.php
 
-Laravelの @<tt>{dispatch()} でジョブをキューに投入するだけで、リクエスト完了後にバックグラウンドで処理が進みます。CSV生成が完了したタイミングで、上記のMercure pushとOTP生成を呼び出しています。
+Laravelの @<tt>{dispatch()} でジョブをキューに投入するだけで、リクエスト完了後にバックグラウンドで処理が進みます。CSV生成が完了したタイミングで、上記のMercure pushとダウンロードトークン生成を呼び出しています。
 
 == この章のまとめ
 
 この章では、FrankenPHPに組み込まれたMercure Hubを使って、リアルタイム通知機能を実装しました。思ったよりも少ないコードで実現できたのではないでしょうか。
 
  * @<b>{Mercure Hub}: FrankenPHPに内蔵されており、@<tt>{mercure_publish()} を呼び出すだけでSSEによるリアルタイム通知を実現できます。Node.jsなどの別サーバーは不要です。
- * @<b>{OTP}: @<tt>{lcobucci/jwt} を用いたJWTをOTPとして生成し、Mercureのペイロードに含めて送信します。有効期限付きの署名済みトークンとして機能するため、短命な認証情報に適しています。
+ * @<b>{ダウンロードトークン}: @<tt>{lcobucci/jwt} を用いたJWTをダウンロードトークンとして生成し、Mercureのペイロードに含めて送信します。有効期限付きの署名済みトークンとして機能するため、使い捨ての認証情報に適しています。
  * @<b>{EventSource API}: ブラウザ標準のAPIのみで購読でき、新規ライブラリのインストールは不要です。
 
-次の章では、HTTP 103 Early Hintsを使ってWebページの表示を高速化する方法を説明します。その次の章で、受け取ったOTPを使ってCSVをセキュアにダウンロードする、X-Sendfileの実装を見ていきます。
+次の章では、HTTP 103 Early Hintsを使ってWebページの表示を高速化する方法を説明します。その次の章で、受け取ったダウンロードトークンを使ってCSVをセキュアにダウンロードする、X-Sendfileの実装を見ていきます。

@@ -5,6 +5,5 @@
 //mdinclude[md/04-first-app.md]
 //mdinclude[md/05-103-early-hints.md]
 //mdinclude[md/06-x-sendfile.md]
-//mdinclude[md/07-deploy.md]
-//mdinclude[md/08-attention.md]
-//mdinclude[md/09-matome.md]
+//mdinclude[md/07-attention.md]
+//mdinclude[md/08-matome.md]
