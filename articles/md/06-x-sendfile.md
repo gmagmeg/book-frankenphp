@@ -1,6 +1,6 @@
 # X-Sendfileで効率的にファイルを配信
 
-この章ではFrankenPHPのX-Sendfile機能を使って、ファイル配信の効率化を行なっていきます。
+FrankenPHPのX-Sendfile機能を使って、ファイル配信を効率化します。
 
 ## 概要
 
@@ -121,8 +121,6 @@ GET https://localhost:8100/download/test-300mb.bin
 
 128MBを超えるファイルが正常にダウンロードできれば、X-Sendfileが有効に動作しています。PHPがファイルの中身をメモリに読み込まず、FrankenPHPが直接配信しているためです。
 
-## まとめ
-
 | 比較項目 | 通常のPHP配信 | X-Sendfile配信 |
 |---|---|---|
 | PHPメモリ消費 | ファイルサイズ分 | ほぼゼロ |
@@ -131,4 +129,4 @@ GET https://localhost:8100/download/test-300mb.bin
 | アクセス制御 | PHPで実装可能 | PHPで実装可能 |
 | サーバー設定 | 不要 | 不要（FrankenPHPネイティブ対応） |
 
-FrankenPHPのX-Sendfileはサーバー側の設定が不要で、PHP側で `trustXSendfileTypeHeader()` を呼ぶだけで利用できます。NginxのX-Accel-Redirectと比べて設定がシンプルなのもFrankenPHPの利点のひとつです。会員限定コンテンツや帳票PDFのダウンロードなど、認証が必要なファイル配信の場面では積極的に採用を検討してください。
+PHP側は `trustXSendfileTypeHeader()` を呼ぶだけで利用でき、Caddyfileへの追加設定も不要です。会員限定コンテンツや帳票PDFなど、認証が必要なファイル配信の場面で活用してください。

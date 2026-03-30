@@ -22,7 +22,8 @@ bookname: ReVIEW-Template
 language: ja
 
 # 書名
-booktitle: {name: "FrankenPHP はじめの一歩 — 組み込み機能でリアルタイム通知アプリを作る", file-as: "reviewテンプレート"}
+booktitle: {name: "FrankenPHP はじめの一歩", file-as: "reviewテンプレート"}
+subtitle: "組み込み機能で作るリアルタイム通知アプリ"
 
 # 著者名。「, 」で区切って複数指定できる
 aut: [{name: "ま@め", file-as: ""}]

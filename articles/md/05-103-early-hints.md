@@ -1,13 +1,13 @@
 # Webページの表示を早くする
 
-この章では、HTTP 103 Early Hints を利用してWebページの表示を速くする方法を説明します。
+HTTP 103 Early Hints を利用してWebページの表示を速くする方法を説明します。
 
 ## 103 Early Hintsとは
 
 HTTP 103 Early Hints は、サーバーが最終レスポンスを返す前に、ブラウザへ予備のHTTPヘッダーを送信できる仕組みです。ブラウザはこの情報をもとに、CSSやJavaScriptなどのリソースを事前に読み込み始めて最終的なHTMLが届く前から、表示に必要な準備を先回りして進められるようになり、ページの表示速度を向上させられます。
 ![103 Early Hints のリクエスト処理フロー比較](images/early-hints-flow.png)
 
-便利そうな機能ですが、どのように利用できるのでしょうか。FrankenPHPでは、この機能を比較的少ない手順で試せます。この節では、そのための準備を進めていきます。
+FrankenPHPでは、この機能を比較的少ない手順で試せます。
 
 ## HTTP/2、SSLの設定
 
@@ -37,7 +37,7 @@ func buildEnv(r *http.Request, fc *FrankenPHPContext) (map[string]string, error)
 
 ## アプリケーションコードの設定
 
-下準備ができたので、アプリケーションにコードを差し込みます。`headers_send(103)` はFrankenPHPが提供する独自関数で、PHP標準には存在しません。この関数を呼び出すことで、最終レスポンスを返す前に103 Early Hintsをブラウザへ送信できます。
+アプリケーションにコードを差し込みます。`headers_send(103)` はFrankenPHPが提供する独自関数で、PHP標準には存在しません。この関数を呼び出すことで、最終レスポンスを返す前に103 Early Hintsをブラウザへ送信できます。
 
 ### preconnectとpreloadの使い分け
 
@@ -63,13 +63,10 @@ headers_send(103);
 
 コードを差し込んだ後は、103 Early Hints が実際に送信されているか確認しましょう。ブラウザの開発者ツールを開き、Networkタブで対象のリクエストを選択してください。Headersの中に `103 Early Hints` のセクションが表示され、指定した `Link` ヘッダーが含まれていれば正しく動作しています。
 
-![Early Hints Headerあり](images/early-hints-headers.png)  
+![Early Hints Headerあり](images/early-hints-headers.png)
 
-![Early Hints Headerなし](images/early-hints-no.png)  
+![Early Hints Headerなし](images/early-hints-no.png)
 
 さらにTimingタブを確認すると、Early Hintsありの場合はリソースの読み込み開始タイミングが早まっていることがわかります。CSSやJSの取得がHTMLの受信完了を待たずに始まるため、ページの表示速度の改善につながります。
 
-
-## この章のまとめ
-
-ここまで簡単に設定を済ませてきましたが、他のWebサーバーなら煩雑な作業が発生します。しかしここがFrankenPHPの良いところで、起動コマンドに `--https` フラグを1つ追加するだけでHTTPS化とHTTP/2が有効になります。アプリケーション側のコードもわずか数行で済み、手軽にHTTP 103 Early Hintsを導入できます。シンプルな設定で諸々の機能が実現できる魅力の一側面が伝わっていれば幸いです。
+他のWebサーバーであれば煩雑な設定作業が発生しますが、FrankenPHPでは起動コマンドに `--https` フラグを1つ追加するだけでHTTPS化とHTTP/2が有効になります。アプリケーション側のコードもわずか数行で、手軽にHTTP 103 Early Hintsを導入できます。
