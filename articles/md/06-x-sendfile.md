@@ -61,21 +61,13 @@ OctaneではWorker起動時に `boot()` が1回だけ実行されます。`trust
 
 ```php
 <?php
-
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-
 class DownloadController extends Controller
 {
     public function download(Request $request, string $filename): BinaryFileResponse
     {
         // パストラバーサル対策
         abort_if(str_contains($filename, '..'), 400, '不正なファイルパスです。');
-
         $path = base_path('private-files/' . $filename);
-
         abort_unless(file_exists($path), 404, 'ファイルが見つかりません。');
 
         return new BinaryFileResponse($path);

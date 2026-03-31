@@ -56,7 +56,7 @@ PHPのモダンな実行環境として、FrankenPHPのほかに **Swoole** や 
 |------|:-:|:-:|:-:|:-:|:-:|
 | Webサーバー内包 | ○ | × | × | × | ○ |
 | Workerモード | × | × | ○ | ○ | ○ |
-| 既存コードへの影響 | 低 | 低 | 高 | 低 | 低 |
+| 既存コードへの影響 | 低 | 低 | 高 | 低 | 中 |
 | Laravel Octane対応 | × | × | ○ | ○ | ○ |
 
 ※ mod_php: Apache+mod_php、PHP-FPM: Nginx+PHP-FPM、RR: RoadRunner
